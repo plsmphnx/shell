@@ -1,0 +1,210 @@
+$shd: rgba(255, 255, 255, 0.2);
+$dim: rgba(255, 255, 255, 0.4);
+$txt: rgba(255, 255, 255, 0.8);
+
+$bg: rgba(0, 0, 0, 0.4);
+
+$border: 2px;
+$radius: 4px;
+$margin: 0.5em;
+
+$icon: 2em + (2 * $margin);
+$popup: 8 * $icon;
+
+$font: 'Noto Sans Mono';
+$symbols: 'Symbols Nerd Font Mono';
+
+* {
+    all: unset;
+}
+
+window {
+    font-family: $font, $symbols;
+    font-size: 14px;
+    color: $txt;
+}
+
+.bar {
+    background-color: black;
+    padding-bottom: $border;
+}
+
+.status {
+    padding: 0 calc($margin / 2);
+    image,
+    label {
+        padding: 0 calc($margin / 2);
+    }
+}
+
+@mixin target {
+    background-clip: padding-box;
+    border-radius: (2 * $radius);
+    border-style: solid;
+    border-width: 0 $border;
+    border-color: $dim;
+    padding: 0 $margin;
+}
+
+.target {
+    @include target;
+}
+
+button.target:hover {
+    border-color: $txt;
+}
+
+@mixin float {
+    @include target;
+    background-color: $bg;
+    margin: $margin;
+    padding: $margin;
+}
+
+.float {
+    @include float;
+}
+
+.workspaces {
+    padding: 0 calc($border / 2);
+    label {
+        font: 125% $symbols;
+    }
+    button {
+        margin: 0 calc($border / -2);
+        &.unfocused:not(:hover) {
+            border-color: transparent;
+        }
+    }
+}
+
+.dim {
+    color: $dim;
+}
+
+.hidden {
+    color: transparent;
+}
+
+.action {
+    @include float;
+    min-width: $popup;
+    .title {
+        font-weight: bold;
+    }
+    .subtitle {
+        font-style: italic;
+    }
+    .actions {
+        margin-top: $margin;
+        border-top: $border solid $shd;
+        padding-top: $margin;
+        button {
+            &:not(:hover) {
+                color: $dim;
+            }
+            &:not(:first-child) {
+                border-left: $border solid $shd;
+            }
+        }
+    }
+}
+
+.icon {
+    font-size: 250%;
+    min-width: (0.4 * $icon);
+    min-height: (0.4 * $icon);
+    border-radius: $radius;
+    margin-right: (0.4 * $margin);
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.launcher {
+    > * {
+        @include float;
+    }
+    > scrollable {
+        min-width: (2 * $popup);
+        min-height: $popup;
+        padding: 0;
+    }
+    button {
+        border-radius: $radius;
+        padding: 0 $margin;
+        min-height: ($icon * 0.75);
+        &:focus {
+            background-color: $shd;
+        }
+    }
+    entry:focus + * button:hover {
+        background-color: $shd;
+    }
+    .actions {
+        color: $shd;
+        padding-left: $margin;
+    }
+    label:first-child {
+        padding-left: ($icon + $margin);
+    }
+}
+
+tooltip {
+    @include float;
+}
+
+@mixin menu($item) {
+    @include float;
+    #{$item} {
+        &:not(:hover) {
+            color: $dim;
+        }
+        &:not(:first-child) {
+            margin-top: calc($margin / 2);
+        }
+    }
+}
+
+.menu {
+    @include menu(button);
+}
+
+menu {
+    @include menu(menuitem);
+}
+
+trough {
+    border-radius: 0.5em;
+    border: $border solid $shd;
+}
+scale.horizontal trough {
+    padding: 0 0.5em;
+    margin: 0 $margin;
+}
+
+slider {
+    border-radius: 0.5em;
+    background-color: $dim;
+    min-height: 1em;
+    min-width: 1em;
+    &:hover {
+        background-color: $txt;
+    }
+}
+
+.calendar {
+    @include float;
+    calendar {
+        color: $dim;
+        padding: (0.5 * $margin);
+        .header,
+        .highlight,
+        :selected {
+            color: $txt;
+        }
+        :indeterminate {
+            color: $shd;
+        }
+    }
+}
