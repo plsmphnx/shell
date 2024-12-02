@@ -14,7 +14,7 @@ export default ({ monitor }: Monitor.Props) => (
     <button
         className="target"
         visible={focusedMonitor.as(m => m === monitor.h)}
-        onClick={onClick('hyprnome -me', () => hyprland.dispatch('killactive', ''))}>
+        {...onClick('hyprnome -me', () => hyprland.dispatch('killactive', ''))}>
         <label label={focusedTitle} truncate />
     </button>
 );

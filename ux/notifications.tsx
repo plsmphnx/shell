@@ -27,7 +27,7 @@ const popup = (n: Notifd.Notification) => {
         n.id,
         <Action actions={customActions.map(({ id, label }) => [label, () => n.invoke(id)])}>
             <eventbox
-                onClick={onClick(
+                {...onClick(
                     () => defaultAction && n.invoke(defaultAction.id),
                     () => n.dismiss(),
                 )}>

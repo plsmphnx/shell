@@ -37,10 +37,7 @@ const item = (app: Apps.Application, ctx: Context) => {
             </box>
         </Button>
     );
-    const launch = () => {
-        ctx.window.destroy();
-        app.launch();
-    };
+    const launch = () => (ctx.window.close(), app.launch());
 
     const desk = app.app as Gio.DesktopAppInfo;
     const list = desk.list_actions();
@@ -54,8 +51,8 @@ const item = (app: Apps.Application, ctx: Context) => {
 
         primary = (
             <Primary
-                onClick={onClick(launch, toggle)}
-                onKeyPressEvent={onKey({ Return: launch, Right: open, Left: close })}>
+                {...onClick(launch, toggle)}
+                {...onKey({ Return: launch, Right: open, Left: close })}>
                 <Text className="actions" label={show(s => (s ? ICONS.Less : ICONS.More))} />
             </Primary>
         );
@@ -66,14 +63,13 @@ const item = (app: Apps.Application, ctx: Context) => {
                 <revealer revealChild={show()} transitionType={SLIDE_DOWN}>
                     <box vertical>
                         {list.map(a => {
-                            const action = () => {
-                                ctx.window.destroy();
-                                desk.launch_action(a, null);
-                            };
+                            const action = () => (
+                                ctx.window.close(), desk.launch_action(a, null)
+                            );
                             return (
                                 <Button
-                                    onClick={onClick(action, close)}
-                                    onKeyPressEvent={onKey({ Return: action, Left: close })}>
+                                    {...onClick(action, close)}
+                                    {...onKey({ Return: action, Left: close })}>
                                     <Text label={desk.get_action_name(a) || a} />
                                 </Button>
                             );
@@ -83,7 +79,7 @@ const item = (app: Apps.Application, ctx: Context) => {
             </box>
         );
     } else {
-        return <Primary onClick={launch} onKeyPressEvent={onKey({ Return: launch })} />;
+        return <Primary onClick={launch} {...onKey({ Return: launch })} />;
     }
 };
 
@@ -94,24 +90,21 @@ export default () => {
     const text = Variable('');
     const list = text(t => apps.exact_query(t));
 
-    const closer = <Closer onClose={() => ctx.window.destroy()} />;
+    const closer = <Closer onClose={() => ctx.window.close()} />;
 
     return (
         <window
             namespace="launcher"
             layer={Layer.OVERLAY}
             keymode={Keymode.EXCLUSIVE}
-            onKeyPressEvent={onKey({ Escape: () => ctx.window.destroy() })}
+            {...onKey({ Escape: () => ctx.window.close() })}
             onDestroy={() => closer.destroy()}
             setup={self => (ctx.window = self)}>
             <box className="launcher" vertical>
                 <entry
                     hexpand
                     onChanged={self => text.set(self.text)}
-                    onActivate={() => {
-                        ctx.window.destroy();
-                        list.get()[0]?.launch();
-                    }}
+                    onActivate={() => (ctx.window.close(), list.get()[0]?.launch())}
                     setup={self => (ctx.entry = self)}
                 />
                 <scrollable

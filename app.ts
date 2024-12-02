@@ -15,11 +15,9 @@ App.start({
     main() {
         Client.reload();
         const hyprland = Hyprland.get_default();
-        const lazy = new Map(
-            App.get_monitors().map(m => [m, Bar(Monitor.resolve(hyprland, m))]),
-        );
-        App.connect('monitor-added', (_, m) => lazy.set(m, Bar(Monitor.resolve(hyprland, m))));
-        App.connect('monitor-removed', (_, m) => (lazy.get(m)?.destroy(), lazy.delete(m)));
+        const lazy = new Map(hyprland.monitors.map(m => [m.id, Bar(Monitor.resolve(m))]));
+        hyprland.connect('monitor-added', (_, m) => lazy.set(m.id, Bar(Monitor.resolve(m))));
+        hyprland.connect('monitor-removed', (_, m) => (lazy.get(m)?.close(), lazy.delete(m)));
     },
     requestHandler(req, ret) {
         switch (req) {

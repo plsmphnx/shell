@@ -25,21 +25,25 @@ export function onClick<T extends Gtk.Widget>(
     const p = typeof primary === 'string' ? () => execAsync(primary) : primary || (() => {});
     const s =
         typeof secondary === 'string' ? () => execAsync(secondary) : secondary || (() => {});
-    return (obj: T, evt: Astal.ClickEvent): unknown => {
-        switch (evt.button) {
-            case Mouse.PRIMARY:
-                return p(obj, evt);
-            case Mouse.SECONDARY:
-                return s(obj, evt);
-        }
+    return {
+        onClick: (obj: T, evt: Astal.ClickEvent): unknown => {
+            switch (evt.button) {
+                case Mouse.PRIMARY:
+                    return p(obj, evt);
+                case Mouse.SECONDARY:
+                    return s(obj, evt);
+            }
+        },
     };
 }
 
 export function onKey<T extends Gtk.Widget>(keys: {
     [key: string]: (obj: T, evt: Gdk.Event) => unknown;
 }) {
-    return (obj: T, evt: Gdk.Event): unknown =>
-        keys[Gdk.keyval_name(evt.get_keyval()[1]) || '']?.(obj, evt);
+    return {
+        onKeyPressEvent: (obj: T, evt: Gdk.Event): unknown =>
+            keys[Gdk.keyval_name(evt.get_keyval()[1]) || '']?.(obj, evt),
+    };
 }
 
 export namespace Monitor {
@@ -50,10 +54,13 @@ export namespace Monitor {
         };
     }
 
-    export function resolve({ monitors }: Hyprland.Hyprland, g: Gdk.Monitor): Props {
-        for (const h of monitors) {
-            if (g.display.get_monitor_at_point(h.x, h.y) === g) {
-                return { monitor: { g, h } };
+    const display = Gdk.Display.get_default();
+    const screen = Gdk.Screen.get_default();
+
+    export function resolve(h: Hyprland.Monitor): Props {
+        for (let i = 0; i < display.get_n_monitors(); ++i) {
+            if (screen.get_monitor_plug_name(i) === h.name) {
+                return { monitor: { h, g: display.get_monitor(i) } };
             }
         }
         return undefined as any;

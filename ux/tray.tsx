@@ -18,14 +18,14 @@ export default () => {
             item.item_id,
             <button
                 tooltipMarkup={bind(item, 'tooltip_markup')}
-                onClick={onClick(
+                {...onClick(
                     open && item.is_menu ? open : (_, { x, y }) => item.activate(x, y),
                     open ?? ((_, { x, y }) => item.secondary_activate(x, y)),
                 )}
                 onDestroy={() => menu?.destroy()}>
                 <icon gIcon={bind(item, 'gicon')} />
             </button>,
-        ];
+        ] as const;
     }, tray.get_items());
     const conn = [
         tray.connect('item-added', (_, id) => lazy.add(tray.get_item(id))),

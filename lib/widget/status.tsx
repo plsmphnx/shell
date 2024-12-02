@@ -12,8 +12,8 @@ export interface Props extends Omit<Widget.ButtonProps, 'child'> {
 export default ({ reveal, onPrimary, onSecondary, ...rest }: Props) =>
     reveal ? (
         <revealer revealChild={reveal} transitionType={SLIDE_LEFT} transitionDuration={500}>
-            <button {...rest} onClick={onClick(onPrimary, onSecondary)} />
+            <button {...rest} {...onClick(onPrimary, onSecondary)} />
         </revealer>
     ) : (
-        <button {...rest} onClick={onClick(onPrimary, onSecondary)} />
+        <button {...rest} {...onClick(onPrimary, onSecondary)} />
     );

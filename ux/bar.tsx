@@ -1,3 +1,5 @@
+import { Widget } from 'astal/gtk3';
+
 import { Speaker, Microphone } from './audio';
 import Bluetooth from './bluetooth';
 import Clock from './clock';
@@ -41,4 +43,4 @@ export default ({ monitor }: Monitor.Props) => (
             </box>
         </centerbox>
     </window>
-);
+) as Widget.Window;
