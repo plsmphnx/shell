@@ -31,10 +31,12 @@ const popup = (n: Notifd.Notification) => {
                     () => defaultAction && n.invoke(defaultAction.id),
                     () => n.dismiss(),
                 )}>
-                {icon(n)}
-                <box vertical hexpand vexpand>
-                    <Markup className="title" label={n.summary} halign={START} truncate />
-                    <Markup label={n.body} halign={START} wrap />
+                <box>
+                    {icon(n)}
+                    <box vertical hexpand vexpand>
+                        <Markup className="title" label={n.summary} xalign={0} truncate />
+                        <Markup label={n.body} xalign={0} wrap />
+                    </box>
                 </box>
             </eventbox>
         </Action>,

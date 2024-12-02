@@ -30,14 +30,14 @@ const players = bind(Mpris.get_default(), 'players');
 const icon = bind(
     reduce(
         players.as(ps =>
-            bind(join(...ps.map(p => bind(p, 'playback_status')))).as(ss =>
+            join(...ps.map(p => bind(p, 'playback_status'))).as((...ss) =>
                 ss.every(s => s !== PLAYING),
             ),
         ),
     ),
 ).as(p => (p ? ICONS.Paused : ICONS.Icon));
 
-const Text = (props: Widget.LabelProps) => <label {...props} hexpand wrap halign={START} />;
+const Text = (props: Widget.LabelProps) => <label {...props} hexpand wrap xalign={0} />;
 
 const player = (p: Mpris.Player) => {
     const pos = bind(p, 'position');

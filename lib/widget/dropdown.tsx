@@ -11,10 +11,6 @@ export interface Props extends Monitor.Props {
     child?: Gtk.Widget | Binding<Gtk.Widget>;
 }
 export default ({ monitor, reveal, onReveal, child }: Props) => {
-    const show = join(reveal, bind(Hyprland.get_default(), 'focused_monitor')).as(
-        (o, f) => o && f === monitor.h,
-    );
-
     const unsub =
         onReveal &&
         child &&
@@ -23,7 +19,6 @@ export default ({ monitor, reveal, onReveal, child }: Props) => {
                 ? r => r && onReveal(child.get())
                 : r => r && onReveal(child),
         );
-
     return (
         <window
             namespace="dropdown"
@@ -31,7 +26,12 @@ export default ({ monitor, reveal, onReveal, child }: Props) => {
             anchor={Anchor.TOP | Anchor.RIGHT}
             layer={Layer.OVERLAY}
             onDestroy={() => unsub?.()}>
-            <revealer revealChild={show} transitionType={SLIDE_DOWN} transitionDuration={1000}>
+            <revealer
+                revealChild={join(reveal, bind(Hyprland.get_default(), 'focused_monitor')).as(
+                    (o, f) => o && f === monitor.h,
+                )}
+                transitionType={SLIDE_DOWN}
+                transitionDuration={1000}>
                 {child}
             </revealer>
         </window>

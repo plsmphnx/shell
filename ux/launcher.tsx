@@ -19,7 +19,7 @@ interface Context {
 
 const item = (app: Apps.Application, ctx: Context) => {
     const Text = (props: Widget.LabelProps) => (
-        <label {...props} halign={START} valign={CENTER} truncate />
+        <label {...props} xalign={0} valign={CENTER} truncate />
     );
     const Button = (props: Widget.ButtonProps) => (
         <button

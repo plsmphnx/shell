@@ -37,8 +37,7 @@ function label({ clients }: Hyprland.Hyprland) {
 }
 
 function group(cs: Hyprland.Client[]) {
-    const bs = cs.map(c => join(bind(c, 'x'), bind(c, 'y'), Client.icon(c)));
-    return bind(join(...bs)).as(rs =>
+    return join(...cs.map(c => join(bind(c, 'x'), bind(c, 'y'), Client.icon(c)))).as((...rs) =>
         rs
             .sort(([ax, ay], [bx, by]) => ax - bx || ay - by)
             .map(([, , i]) => i)
