@@ -62,7 +62,6 @@ const SUBMAP = Context(() =>
 export default ({ ctx, monitor }: Props) => {
     const hyprland = Hyprland.get_default();
     const f = bind(hyprland, 'focused_workspace');
-    const filter = (w: Hyprland.Workspace) => w.id > 0 && w.monitor === monitor;
 
     const lazy = new Lazy(
         w => [
@@ -70,13 +69,14 @@ export default ({ ctx, monitor }: Props) => {
             <button
                 className={f.as(f => (f === w ? 'target' : 'unfocused target'))}
                 label={bind(reduce(LABELS(ctx)(l => l.workspace[w.id] || '')))}
+                visible={bind(w, 'monitor').as(m => m === monitor)}
                 onClicked={() => hyprland.dispatch('workspace', String(w.id))}
             />,
         ],
-        hyprland.workspaces.filter(filter),
+        hyprland.workspaces.filter(w => w.id > 0),
     );
     const conn = [
-        hyprland.connect('workspace-added', (_, w) => filter(w) && lazy.add(w)),
+        hyprland.connect('workspace-added', (_, w) => w.id > 0 && lazy.add(w)),
         hyprland.connect('workspace-removed', (_, id) => lazy.del(id)),
     ];
 

@@ -21,6 +21,11 @@ App.start({
         hyprland.connect('monitor-added', (_, m) => lazy.set(m.id, Bar({ ctx, monitor: m })));
         hyprland.connect('monitor-removed', (_, m) => (lazy.get(m)?.close(), lazy.delete(m)));
     },
+
+    client(msg: (msg: string) => string, ...args: string[]) {
+        console.log(msg(args.join(' ')));
+    },
+
     requestHandler(req, ret) {
         switch (req) {
             case 'launch':
@@ -28,6 +33,9 @@ App.start({
                 break;
             case 'reload':
                 Client.reload(ctx);
+                break;
+            case 'quit':
+                App.quit();
                 break;
         }
         ret('');

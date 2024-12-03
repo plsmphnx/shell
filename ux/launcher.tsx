@@ -39,8 +39,8 @@ const item = (app: Apps.Application, ctx: Context) => {
     );
     const launch = () => (ctx.window.close(), app.launch());
 
-    const desk = app.app as Gio.DesktopAppInfo;
-    const list = desk.list_actions();
+    const info = app.app as Gio.DesktopAppInfo;
+    const list = info.list_actions();
     if (list.length > 0) {
         const show = Variable(false);
         let primary: Gtk.Widget;
@@ -64,13 +64,13 @@ const item = (app: Apps.Application, ctx: Context) => {
                     <box vertical>
                         {list.map(a => {
                             const action = () => (
-                                ctx.window.close(), desk.launch_action(a, null)
+                                ctx.window.close(), info.launch_action(a, null)
                             );
                             return (
                                 <Button
                                     {...Event.click(action, close)}
                                     {...Event.key({ Return: action, Left: close })}>
-                                    <Text label={desk.get_action_name(a) || a} />
+                                    <Text label={info.get_action_name(a) || a} />
                                 </Button>
                             );
                         })}
