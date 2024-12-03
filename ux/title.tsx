@@ -2,19 +2,23 @@ import { bind } from 'astal';
 import Hyprland from 'gi://AstalHyprland';
 
 import { reduce } from '../lib/sub';
-import { Monitor, onClick } from '../lib/util';
+import { Context, Event, Props } from '../lib/util';
 
-const hyprland = Hyprland.get_default();
+const CTX = Context(() => {
+    const focused = bind(Hyprland.get_default(), 'focused_client');
+    return {
+        title: bind(reduce(focused.as(f => (f ? bind(f, 'title') : '')))),
+        monitor: bind(reduce(focused.as(f => f && bind(f, 'monitor')))),
+    };
+});
 
-const focused = bind(hyprland, 'focused_client');
-const focusedTitle = bind(reduce(focused.as(f => (f ? bind(f, 'title') : ''))));
-const focusedMonitor = bind(reduce(focused.as(f => f && bind(f, 'monitor'))));
-
-export default ({ monitor }: Monitor.Props) => (
+export default ({ ctx, monitor }: Props) => (
     <button
         className="target"
-        visible={focusedMonitor.as(m => m === monitor.h)}
-        {...onClick('hyprnome -me', () => hyprland.dispatch('killactive', ''))}>
-        <label label={focusedTitle} truncate />
+        visible={CTX(ctx).monitor.as(m => m === monitor)}
+        {...Event.click('hyprnome -me', () =>
+            Hyprland.get_default().dispatch('killactive', ''),
+        )}>
+        <label label={CTX(ctx).title} truncate />
     </button>
 );

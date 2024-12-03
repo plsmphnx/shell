@@ -3,7 +3,7 @@ import Battery from 'gi://AstalBattery';
 
 import { select } from '../lib/icons';
 import { join } from '../lib/sub';
-import { Monitor } from '../lib/util';
+import { Context, Props } from '../lib/util';
 import { Toggle } from '../lib/widget';
 
 const { CHARGING, DISCHARGING, EMPTY, UNKNOWN } = Battery.State;
@@ -59,43 +59,53 @@ function time(s: number) {
     return new Date(s * 1000).toISOString().substring(14, 19);
 }
 
-const battery = Battery.get_default();
+const CTX = Context(() => {
+    const battery = Battery.get_default();
 
-const type = bind(battery, 'device_type');
-const state = bind(battery, 'state');
-const percent = bind(battery, 'percentage');
-const empty = bind(battery, 'time_to_empty');
-const full = bind(battery, 'time_to_full');
+    const type = bind(battery, 'device_type');
+    const state = bind(battery, 'state');
+    const percent = bind(battery, 'percentage');
+    const empty = bind(battery, 'time_to_empty');
+    const full = bind(battery, 'time_to_full');
 
-const icon = join(type, state, percent).as((t, s, p) => {
-    switch (t === BATTERY ? s : UNKNOWN) {
-        case CHARGING:
-            return ICONS.Charging(p);
-        case DISCHARGING:
-            return ICONS.Draining(p);
-        case EMPTY:
-            return ICONS.Alert;
-        default:
-            return ICONS.Icon;
-    }
+    return {
+        icon: join(type, state, percent).as((t, s, p) => {
+            switch (t === BATTERY ? s : UNKNOWN) {
+                case CHARGING:
+                    return ICONS.Charging(p);
+                case DISCHARGING:
+                    return ICONS.Draining(p);
+                case EMPTY:
+                    return ICONS.Alert;
+                default:
+                    return ICONS.Icon;
+            }
+        }),
+
+        tooltip: join(type, state, percent, empty, full).as((t, s, p, e, f) => {
+            p = Math.floor(p * 100);
+            switch (t === BATTERY ? s : UNKNOWN) {
+                case CHARGING:
+                    return `${p}% (${time(f)})`;
+                case DISCHARGING:
+                    return `${p}% (${time(e)})`;
+                case EMPTY:
+                    return '0%';
+                default:
+                    return '100%';
+            }
+        }),
+    };
 });
 
-const tooltip = join(type, state, percent, empty, full).as((t, s, p, e, f) => {
-    p = Math.floor(p * 100);
-    switch (t === BATTERY ? s : UNKNOWN) {
-        case CHARGING:
-            return `${p}% (${time(f)})`;
-        case DISCHARGING:
-            return `${p}% (${time(e)})`;
-        case EMPTY:
-            return '0%';
-        default:
-            return '100%';
-    }
-});
-
-export default ({ monitor }: Monitor.Props) => (
-    <Toggle className="status" monitor={monitor} label={icon} tooltipText={tooltip}>
+export default ({ ctx, monitor }: Props) => (
+    <Toggle
+        id="power"
+        className="status"
+        ctx={ctx}
+        monitor={monitor}
+        label={CTX(ctx).icon}
+        tooltipText={CTX(ctx).tooltip}>
         <box className="menu" vertical>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
                 <button

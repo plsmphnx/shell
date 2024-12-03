@@ -22,13 +22,13 @@ export default ({ monitor, reveal, onReveal, child }: Props) => {
     return (
         <window
             namespace="dropdown"
-            gdkmonitor={monitor.g}
+            {...Monitor.gdk(monitor)}
             anchor={Anchor.TOP | Anchor.RIGHT}
             layer={Layer.OVERLAY}
             onDestroy={() => unsub?.()}>
             <revealer
                 revealChild={join(reveal, bind(Hyprland.get_default(), 'focused_monitor')).as(
-                    (o, f) => o && f === monitor.h,
+                    (o, f) => o && f === monitor,
                 )}
                 transitionType={SLIDE_DOWN}
                 transitionDuration={1000}>

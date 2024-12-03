@@ -3,7 +3,7 @@ import { Gtk, Widget } from 'astal/gtk3';
 import Apps from 'gi://AstalApps';
 import Gio from 'gi://Gio';
 
-import { onClick, onKey, scrollIntoView } from '../lib/util';
+import { Event, Widget as WidgetUtil } from '../lib/util';
 import { Closer } from '../lib/widget';
 
 const ICONS = {
@@ -25,7 +25,7 @@ const item = (app: Apps.Application, ctx: Context) => {
         <button
             {...props}
             onHover={self => !ctx.entry.is_focus && self.grab_focus()}
-            onFocusInEvent={self => scrollIntoView(ctx.scroll, self)}
+            onFocusInEvent={self => WidgetUtil.scrollIntoView(ctx.scroll, self)}
         />
     );
     const Primary = ({ child, ...rest }: Widget.ButtonProps) => (
@@ -51,8 +51,8 @@ const item = (app: Apps.Application, ctx: Context) => {
 
         primary = (
             <Primary
-                {...onClick(launch, toggle)}
-                {...onKey({ Return: launch, Right: open, Left: close })}>
+                {...Event.click(launch, toggle)}
+                {...Event.key({ Return: launch, Right: open, Left: close })}>
                 <Text className="actions" label={show(s => (s ? ICONS.Less : ICONS.More))} />
             </Primary>
         );
@@ -68,8 +68,8 @@ const item = (app: Apps.Application, ctx: Context) => {
                             );
                             return (
                                 <Button
-                                    {...onClick(action, close)}
-                                    {...onKey({ Return: action, Left: close })}>
+                                    {...Event.click(action, close)}
+                                    {...Event.key({ Return: action, Left: close })}>
                                     <Text label={desk.get_action_name(a) || a} />
                                 </Button>
                             );
@@ -79,7 +79,7 @@ const item = (app: Apps.Application, ctx: Context) => {
             </box>
         );
     } else {
-        return <Primary onClick={launch} {...onKey({ Return: launch })} />;
+        return <Primary onClick={launch} {...Event.key({ Return: launch })} />;
     }
 };
 
@@ -97,7 +97,7 @@ export default () => {
             namespace="launcher"
             layer={Layer.OVERLAY}
             keymode={Keymode.EXCLUSIVE}
-            {...onKey({ Escape: () => ctx.window.close() })}
+            {...Event.key({ Escape: () => ctx.window.close() })}
             onDestroy={() => closer.destroy()}
             setup={self => (ctx.window = self)}>
             <box className="launcher" vertical>

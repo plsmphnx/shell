@@ -1,7 +1,7 @@
 import { Binding } from 'astal';
 import { Astal, Widget } from 'astal/gtk3';
 
-import { onClick } from '../util';
+import { Event } from '../util';
 
 export interface Props extends Omit<Widget.ButtonProps, 'child'> {
     reveal?: Binding<boolean>;
@@ -12,8 +12,8 @@ export interface Props extends Omit<Widget.ButtonProps, 'child'> {
 export default ({ reveal, onPrimary, onSecondary, ...rest }: Props) =>
     reveal ? (
         <revealer revealChild={reveal} transitionType={SLIDE_LEFT} transitionDuration={500}>
-            <button {...rest} {...onClick(onPrimary, onSecondary)} />
+            <button {...rest} {...Event.click(onPrimary, onSecondary)} />
         </revealer>
     ) : (
-        <button {...rest} {...onClick(onPrimary, onSecondary)} />
+        <button {...rest} {...Event.click(onPrimary, onSecondary)} />
     );

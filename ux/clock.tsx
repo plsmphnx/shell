@@ -1,21 +1,25 @@
 import { Variable } from 'astal';
 import { Widget } from 'astal/gtk3';
 
-import { Monitor } from '../lib/util';
+import { Context, Props } from '../lib/util';
 import { Calendar, Toggle } from '../lib/widget';
 
-const time = Variable('').poll(1000, () =>
-    new Date().toLocaleString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit',
-    }),
+const TIME = Context(() =>
+    Variable('').poll(1000, () =>
+        new Date().toLocaleString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+        }),
+    )(),
 );
 
-export default ({ monitor }: Monitor.Props) => (
+export default ({ ctx, monitor }: Props) => (
     <Toggle
+        id="clock"
         className="target"
+        ctx={ctx}
         monitor={monitor}
-        label={time()}
+        label={TIME(ctx)}
         onReveal={box => {
             const now = new Date();
             const calendar = (box as Widget.Box).child as Calendar;

@@ -1,6 +1,6 @@
 import { Binding } from 'astal';
 
-import { Monitor, opt } from '../util';
+import { Monitor } from '../util';
 
 export interface Props extends Partial<Monitor.Props> {
     reveal?: boolean | Binding<boolean>;
@@ -9,7 +9,7 @@ export interface Props extends Partial<Monitor.Props> {
 export default ({ reveal, monitor, onClose }: Props) => (
     <window
         namespace="closer"
-        {...opt('gdkmonitor', monitor?.g)}
+        {...Monitor.gdk(monitor)}
         anchor={Anchor.TOP | Anchor.RIGHT | Anchor.LEFT | Anchor.BOTTOM}
         layer={Layer.TOP}
         keymode={Keymode.NONE}

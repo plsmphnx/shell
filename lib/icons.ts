@@ -1,6 +1,8 @@
 import { GLib, readFile, Variable } from 'astal';
 import Hyprland from 'gi://AstalHyprland';
 
+import { Context } from './util';
+
 export const SPACE = '\u{f1050}';
 
 export function select(...icons: string[]) {
@@ -11,10 +13,10 @@ export function select(...icons: string[]) {
 }
 
 export namespace Client {
-    const icons = Variable<[string, string][]>([]);
+    const ICONS = Context(() => Variable<[string, string][]>([]));
 
-    export function reload() {
-        icons.set(
+    export function reload(ctx: Context) {
+        ICONS(ctx).set(
             readFile(`${GLib.getenv('HOME')}/.local/share/ux/icons.txt`)
                 .split('\n')
                 .map(l => l.trim())
@@ -24,8 +26,8 @@ export namespace Client {
         );
     }
 
-    export function icon(client: Hyprland.Client) {
-        return icons(i => {
+    export function icon(ctx: Context, client: Hyprland.Client) {
+        return ICONS(ctx)(i => {
             for (const [cls, icon] of i) {
                 if (client.class.toLowerCase().includes(cls)) {
                     return icon;

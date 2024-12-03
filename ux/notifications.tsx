@@ -1,7 +1,7 @@
 import { timeout, Variable } from 'astal';
 import Notifd from 'gi://AstalNotifd';
 
-import { Monitor, onClick } from '../lib/util';
+import { Event, Props } from '../lib/util';
 import { Action, Dropdown, Image, Lazy, Markup, Toggle } from '../lib/widget';
 
 const ICONS = {
@@ -27,7 +27,7 @@ const popup = (n: Notifd.Notification) => {
         n.id,
         <Action actions={customActions.map(({ id, label }) => [label, () => n.invoke(id)])}>
             <eventbox
-                {...onClick(
+                {...Event.click(
                     () => defaultAction && n.invoke(defaultAction.id),
                     () => n.dismiss(),
                 )}>
@@ -43,7 +43,7 @@ const popup = (n: Notifd.Notification) => {
     ] as const;
 };
 
-export default ({ monitor }: Monitor.Props) => {
+export default ({ ctx, monitor }: Props) => {
     const notifd = Notifd.get_default();
 
     const all = new Lazy(popup, notifd.notifications);
@@ -83,6 +83,8 @@ export default ({ monitor }: Monitor.Props) => {
     const bound = all();
     return (
         <Toggle
+            id="notifications"
+            ctx={ctx}
             monitor={monitor}
             label={ICONS.Icon}
             reveal={bound.as(n => n.length > 0)}

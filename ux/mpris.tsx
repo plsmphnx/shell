@@ -3,7 +3,7 @@ import { Astal, Widget } from 'astal/gtk3';
 import Mpris from 'gi://AstalMpris';
 
 import { join, reduce } from '../lib/sub';
-import { Monitor } from '../lib/util';
+import { Context, Props } from '../lib/util';
 import { Action, Image, Toggle } from '../lib/widget';
 
 const { PLAYING } = Mpris.PlaybackStatus;
@@ -25,17 +25,21 @@ function length(s: number) {
     return `${min}:${`0${sec}`.slice(-2)}`;
 }
 
-const players = bind(Mpris.get_default(), 'players');
+const CTX = Context(() => {
+    const players = bind(Mpris.get_default(), 'players');
 
-const icon = bind(
-    reduce(
-        players.as(ps =>
-            join(...ps.map(p => bind(p, 'playback_status'))).as((...ss) =>
-                ss.every(s => s !== PLAYING),
+    const icon = bind(
+        reduce(
+            players.as(ps =>
+                join(...ps.map(p => bind(p, 'playback_status'))).as((...ss) =>
+                    ss.every(s => s !== PLAYING),
+                ),
             ),
         ),
-    ),
-).as(p => (p ? ICONS.Paused : ICONS.Icon));
+    ).as(p => (p ? ICONS.Paused : ICONS.Icon));
+
+    return { players, icon };
+});
 
 const Text = (props: Widget.LabelProps) => <label {...props} hexpand wrap xalign={0} />;
 
@@ -84,13 +88,15 @@ const player = (p: Mpris.Player) => {
     );
 };
 
-export default ({ monitor }: Monitor.Props) => (
+export default ({ ctx, monitor }: Props) => (
     <Toggle
+        id="mpris"
+        ctx={ctx}
         monitor={monitor}
-        label={icon}
-        reveal={players.as(p => p.length > 0)}
+        label={CTX(ctx).icon}
+        reveal={CTX(ctx).players.as(p => p.length > 0)}
         onSecondary={() => {
-            const ps = players.get();
+            const ps = CTX(ctx).players.get();
             const playing = ps.filter(p => p.playback_status === PLAYING);
             for (const p of playing) {
                 p.pause();
@@ -99,6 +105,6 @@ export default ({ monitor }: Monitor.Props) => (
                 ps[0].play();
             }
         }}>
-        <box vertical>{players.as(p => p.map(player))}</box>
+        <box vertical>{CTX(ctx).players.as(p => p.map(player))}</box>
     </Toggle>
 );

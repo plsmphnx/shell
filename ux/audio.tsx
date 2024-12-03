@@ -3,7 +3,7 @@ import Wp from 'gi://AstalWp';
 
 import { select } from '../lib/icons';
 import { join, reduce } from '../lib/sub';
-import { Select } from '../lib/util';
+import { Context, Select } from '../lib/util';
 import { Status } from '../lib/widget';
 
 const ICONS = {
@@ -18,9 +18,8 @@ const ICONS = {
     },
 };
 
-const audio = Wp.get_default()!.audio;
-
 function icon(
+    audio: Wp.Audio,
     icons: { Off: string; On: (volume: number) => string },
     device: keyof Select<Wp.Audio, Wp.Endpoint>,
 ) {
@@ -31,15 +30,20 @@ function icon(
     ).as((mute, volume) => (mute || volume === 0 ? icons.Off : icons.On(volume)));
 }
 
-const speaker = icon(ICONS.Speaker, 'default_speaker');
-const microphone = icon(ICONS.Microphone, 'default_microphone');
+const SPEAKER = Context(() => icon(Wp.get_default()!.audio, ICONS.Speaker, 'default_speaker'));
 
-export const Speaker = () => <Status label={speaker} onPrimary="pavucontrol" />;
+const MICROPHONE = Context(() =>
+    icon(Wp.get_default()!.audio, ICONS.Microphone, 'default_microphone'),
+);
 
-export const Microphone = () => (
+export const Speaker = ({ ctx }: Context.Props) => (
+    <Status label={SPEAKER(ctx)} onPrimary="pavucontrol" />
+);
+
+export const Microphone = ({ ctx }: Context.Props) => (
     <Status
-        label={microphone}
+        label={MICROPHONE(ctx)}
         onPrimary="pavucontrol"
-        reveal={bind(audio, 'recorders').as(r => r.length > 0)}
+        reveal={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
     />
 );

@@ -4,9 +4,19 @@ import Closer from './closer';
 import Dropdown, { Props as DropdownProps } from './dropdown';
 import Status, { Props as StatusProps } from './status';
 
-export interface Props extends Omit<StatusProps, 'onPrimary'>, Omit<DropdownProps, 'reveal'> {}
-export default ({ reveal, monitor, child, onReveal, onDestroy, ...rest }: Props) => {
-    const open = Variable(false);
+import { Context } from '../util';
+
+const OPEN = Context(() => ({} as { [id: string]: Variable<boolean> }));
+
+export interface Props
+    extends Omit<StatusProps, 'onPrimary'>,
+        Omit<DropdownProps, 'reveal'>,
+        Context.Props {
+    id: string;
+}
+export default ({ id, ctx, reveal, monitor, child, onReveal, onDestroy, ...rest }: Props) => {
+    const map = OPEN(ctx);
+    const open = map[id] || (map[id] = Variable(false));
     const unsub = reveal?.subscribe(v => v || open.set(false));
     const window = { monitor, reveal: open() };
 

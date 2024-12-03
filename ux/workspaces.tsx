@@ -3,19 +3,15 @@ import Hyprland from 'gi://AstalHyprland';
 
 import { Client, SPACE } from '../lib/icons';
 import { join, reduce } from '../lib/sub';
-import { Monitor } from '../lib/util';
+import { Context, Props } from '../lib/util';
 import { Lazy } from '../lib/widget';
-
-const hyprland = Hyprland.get_default();
-
-const submap = Variable('').observe(hyprland, 'submap', (_, s) => s);
 
 interface Labels {
     workspace: { [id: string]: Binding<string> };
     pinned: { [id: string]: Binding<string> };
 }
 
-function label({ clients }: Hyprland.Hyprland) {
+function label(ctx: Context, { clients }: Hyprland.Hyprland) {
     const workspace: { [id: PropertyKey]: Hyprland.Client[] } = {};
     const pinned: { [id: PropertyKey]: Hyprland.Client[] } = {};
     for (const c of clients) {
@@ -28,43 +24,52 @@ function label({ clients }: Hyprland.Hyprland) {
     }
     const ls: Labels = { workspace: {}, pinned: {} };
     for (const [k, v] of Object.entries(workspace)) {
-        ls.workspace[k] = group(v);
+        ls.workspace[k] = group(ctx, v);
     }
     for (const [k, v] of Object.entries(pinned)) {
-        ls.pinned[k] = group(v);
+        ls.pinned[k] = group(ctx, v);
     }
     return ls;
 }
 
-function group(cs: Hyprland.Client[]) {
-    return join(...cs.map(c => join(bind(c, 'x'), bind(c, 'y'), Client.icon(c)))).as((...rs) =>
-        rs
-            .sort(([ax, ay], [bx, by]) => ax - bx || ay - by)
-            .map(([, , i]) => i)
-            .join(' '),
+function group(ctx: Context, cs: Hyprland.Client[]) {
+    return join(...cs.map(c => join(bind(c, 'x'), bind(c, 'y'), Client.icon(ctx, c)))).as(
+        (...rs) =>
+            rs
+                .sort(([ax, ay], [bx, by]) => ax - bx || ay - by)
+                .map(([, , i]) => i)
+                .join(' '),
     );
 }
 
-const labels = Variable(label(hyprland)).observe(
-    [
-        [hyprland, 'client-added'],
-        [hyprland, 'client-removed'],
-        [hyprland, 'client-moved'],
-        [hyprland, 'floating'],
-    ],
-    () => label(hyprland),
+const LABELS = Context(ctx => {
+    const hyprland = Hyprland.get_default();
+    return Variable(label(ctx, hyprland)).observe(
+        [
+            [hyprland, 'client-added'],
+            [hyprland, 'client-removed'],
+            [hyprland, 'client-moved'],
+            [hyprland, 'floating'],
+        ],
+        () => label(ctx, hyprland),
+    );
+});
+
+const SUBMAP = Context(() =>
+    Variable('').observe(Hyprland.get_default(), 'submap', (_, s) => s),
 );
 
-export default ({ monitor }: Monitor.Props) => {
+export default ({ ctx, monitor }: Props) => {
+    const hyprland = Hyprland.get_default();
     const f = bind(hyprland, 'focused_workspace');
-    const filter = (w: Hyprland.Workspace) => w.id > 0 && w.monitor === monitor.h;
+    const filter = (w: Hyprland.Workspace) => w.id > 0 && w.monitor === monitor;
 
     const lazy = new Lazy(
         w => [
             w.id,
             <button
                 className={f.as(f => (f === w ? 'target' : 'unfocused target'))}
-                label={bind(reduce(labels(l => l.workspace[w.id] || '')))}
+                label={bind(reduce(LABELS(ctx)(l => l.workspace[w.id] || '')))}
                 onClicked={() => hyprland.dispatch('workspace', String(w.id))}
             />,
         ],
@@ -80,12 +85,12 @@ export default ({ monitor }: Monitor.Props) => {
             {lazy()}
             <box className="dim status">
                 <label
-                    label={bind(reduce(labels(l => l.pinned[monitor.h.name] || '')))}
-                    visible={labels(l => !!l.pinned[monitor.h.name])}
+                    label={bind(reduce(LABELS(ctx)(l => l.pinned[monitor.name] || '')))}
+                    visible={LABELS(ctx)(l => !!l.pinned[monitor.name])}
                 />
                 <label
-                    className={submap(s => (s ? '' : 'hidden'))}
-                    label={submap(s => s || SPACE)}
+                    className={SUBMAP(ctx)(s => (s ? '' : 'hidden'))}
+                    label={SUBMAP(ctx)(s => s || SPACE)}
                 />
             </box>
         </box>
