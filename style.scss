@@ -30,11 +30,11 @@ window {
 }
 
 .status {
-    padding: 0 calc($margin / 2);
+    padding: 0 ($margin / 2);
     icon,
     image,
     label {
-        padding: 0 calc($margin / 2);
+        padding: 0 ($margin / 2);
     }
 }
 
@@ -67,12 +67,12 @@ button.target:hover {
 }
 
 .workspaces {
-    padding: 0 calc($border / 2);
+    padding: 0 ($border / 2);
     label {
         font: 125% $symbols;
     }
     button {
-        margin: 0 calc($border / -2);
+        margin: 0 ($border / -2);
         &.unfocused:not(:hover) {
             border-color: transparent;
         }
@@ -162,7 +162,7 @@ tooltip {
             color: $dim;
         }
         &:not(:first-child) {
-            margin-top: calc($margin / 2);
+            margin-top: ($margin / 2);
         }
     }
 }

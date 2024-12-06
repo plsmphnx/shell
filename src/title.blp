@@ -1,0 +1,10 @@
+using Gtk 4.0;
+using AstalHyprland 0.1;
+
+template $Title: Button {
+  styles ["target"]
+
+  Label {
+    label: bind template.hyprland as <AstalHyprland.Hyprland>.focused-client.title;
+  }
+}

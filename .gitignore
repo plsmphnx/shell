@@ -1,5 +1,6 @@
-@girs/
-node_modules/
+.sass-cache
+flake.lock
 result
-env.d.ts
-tsconfig.json
+shell*
+style.css*
+ui

@@ -1,0 +1,17 @@
+#!/bin/sh
+XML=$1
+shift
+
+add() {
+    case "$1" in
+    *.ui) echo "<file preprocess=\"xml-stripblanks\">$f</file>" ;;
+    *) echo "<file>$1</file>" ;;
+    esac
+}
+
+cat > "$XML" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources><gresource prefix="/com/github/plsmphnx/shell">
+$(for f in "$@"; do add "$f"; done)
+</gresource></gresources>
+EOF
