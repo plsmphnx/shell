@@ -76,7 +76,9 @@ export default ({ ctx, monitor }: Props) => {
 
     const drop = (
         <Dropdown monitor={monitor} reveal={active()}>
-            <box vertical>{popups()}</box>
+            <box vertical noImplicitDestroy={true}>
+                {popups()}
+            </box>
         </Dropdown>
     );
 

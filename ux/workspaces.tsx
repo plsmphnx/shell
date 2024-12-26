@@ -82,7 +82,7 @@ export default ({ ctx, monitor }: Props) => {
 
     return (
         <box className="workspaces" onDestroy={() => conn.map(id => hyprland.disconnect(id))}>
-            {lazy()}
+            <box noImplicitDestroy={true}>{lazy()}</box>
             <box className="dim status">
                 <label
                     label={bind(reduce(LABELS(ctx)(l => l.pinned[monitor.name] || '')))}
