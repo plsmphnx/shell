@@ -1,10 +1,10 @@
 import { bind } from 'astal';
-import { Astal, Widget } from 'astal/gtk3';
+import { Widget } from 'astal/gtk4';
 import Mpris from 'gi://AstalMpris';
 
 import { join, reduce } from '../lib/sub';
 import { Context, Props } from '../lib/util';
-import { Action, Image, Toggle } from '../lib/widget';
+import { Action, Toggle } from '../lib/widget';
 
 const { PLAYING } = Mpris.PlaybackStatus;
 
@@ -16,8 +16,6 @@ const ICONS = {
     Next: '\u{f04ad}',
     Paused: '\u{f075b}',
 };
-
-const FALLBACK_ICON = 'audio-x-generic-symbolic';
 
 function length(s: number) {
     const min = Math.floor(s / 60);
@@ -60,24 +58,22 @@ const player = (p: Mpris.Player) => {
                 [ICONS.Next, () => p.next(), bind(p, 'can_go_next')],
             ]}>
             <box>
-                <Image className="icon" valign={START} image={bind(p, 'cover_art')} />
+                <image cssClasses={['icon']} valign={Align.START} file={bind(p, 'cover_art')} />
                 <box vertical>
                     <box>
-                        <Text className="title" label={bind(p, 'title')} />
-                        <icon
-                            icon={bind(p, 'entry').as(e =>
-                                Astal.Icon.lookup_icon(e) ? e : FALLBACK_ICON,
-                            )}
+                        <Text cssClasses={['title']} label={bind(p, 'title')} />
+                        <image
+                            iconName={bind(p, 'entry')}
                             tooltipText={bind(p, 'identity')}
-                            valign={START}
+                            valign={Align.START}
                         />
                     </box>
-                    <Text className="subtitle" label={bind(p, 'artist')} />
+                    <Text cssClasses={['subtitle']} label={bind(p, 'artist')} />
                     <box visible={len.as(l => l > 0)}>
                         <label label={pos.as(length)} />
                         <slider
                             hexpand
-                            onDragged={({ value }) => (p.position = value * p.length)}
+                            onChangeValue={({ value }) => (p.position = value * p.length)}
                             value={join(pos, len).as((p, l) => (l > 0 ? p / l : 0))}
                         />
                         <label label={len.as(length)} />

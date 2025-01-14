@@ -1,4 +1,5 @@
-import { Gdk } from 'astal/gtk3';
+import { Gdk } from 'astal/gtk4';
+import type Gio from 'gi://Gio';
 import Hyprland from 'gi://AstalHyprland';
 
 export interface Props {
@@ -10,12 +11,11 @@ export function gdk(monitor?: Hyprland.Monitor) {
         return {};
     }
 
-    const display = Gdk.Display.get_default()!;
-    const screen = Gdk.Screen.get_default()!;
-
-    for (let i = 0; i < display.get_n_monitors(); i++) {
-        if (screen.get_monitor_plug_name(i) === monitor.name) {
-            return { gdkmonitor: display.get_monitor(i)! };
+    const gdkmonitors = Gdk.Display.get_default()!.get_monitors() as Gio.ListModel<Gdk.Monitor>;
+    for (let i = 0; i < gdkmonitors.get_n_items(); i++) {
+        const gdkmonitor = gdkmonitors.get_item(i);
+        if (gdkmonitor?.connector === monitor.name) {
+            return { gdkmonitor };
         }
     }
     return {};

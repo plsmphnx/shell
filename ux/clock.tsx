@@ -1,5 +1,5 @@
 import { Variable } from 'astal';
-import { Widget } from 'astal/gtk3';
+import { Gtk } from 'astal/gtk4';
 
 import { Context, Props } from '../lib/util';
 import { Calendar, Toggle } from '../lib/widget';
@@ -16,17 +16,18 @@ const TIME = Context(() =>
 export default ({ ctx, monitor }: Props) => (
     <Toggle
         id="clock"
-        className="target"
+        cssClasses={['target']}
         ctx={ctx}
         monitor={monitor}
         label={TIME(ctx)}
         onReveal={box => {
             const now = new Date();
-            const calendar = (box as Widget.Box).child as Calendar;
-            calendar.select_day(now.getDate());
-            calendar.select_month(now.getMonth(), now.getFullYear());
+            const calendar = (box as Gtk.Box).get_first_child() as Gtk.Calendar;
+            calendar.set_year(now.getFullYear())
+            calendar.set_month(now.getMonth())
+            calendar.set_day(now.getDate());
         }}>
-        <box className="calendar">
+        <box cssClasses={['calendar']}>
             <Calendar />
         </box>
     </Toggle>

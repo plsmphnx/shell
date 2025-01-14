@@ -14,6 +14,6 @@ export default ({ reveal, monitor, onClose }: Props) => (
         layer={Layer.TOP}
         keymode={Keymode.NONE}
         visible={reveal ?? true}>
-        <eventbox hexpand vexpand onClick={onClose} />
+        <box hexpand vexpand onButtonPressed={onClose} />
     </window>
 );

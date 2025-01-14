@@ -1,7 +1,7 @@
 import { Binding } from 'astal';
-import { Widget } from 'astal/gtk3';
+import { Gtk, hook, Widget } from 'astal/gtk4';
 
-function markup(label: Widget.Label, value?: string) {
+function markup(label: Gtk.Label, value?: string) {
     if (value) {
         if (/<a|&\w+;/.test(value)) {
             label.set_markup(value);
@@ -19,7 +19,7 @@ export default ({ label, setup, ...rest }: Props) => (
         setup={self => {
             if (label instanceof Binding) {
                 markup(self, label.get());
-                self.hook(label, markup);
+                hook(self, label, markup);
             } else {
                 markup(self, label);
             }

@@ -1,13 +1,9 @@
 import { Variable } from 'astal';
-import { Gtk } from 'astal/gtk3';
+import { Gtk } from 'astal/gtk4';
 
 export default class<K, V> extends Variable<Gtk.Widget[]> {
     #map: Map<K, Gtk.Widget>;
     #fun: (v: V) => readonly [K, Gtk.Widget];
-
-    #del(k: K) {
-        this.#map.get(k)?.destroy();
-    }
 
     #set() {
         this.set([...this.#map.entries()].sort().map(([, v]) => v));
@@ -22,14 +18,16 @@ export default class<K, V> extends Variable<Gtk.Widget[]> {
 
     add(v: V) {
         const [k, w] = this.#fun(v);
-        this.#del(k);
+        const p = this.#map.get(k)
         this.#map.set(k, w);
         this.#set();
+        p?.run_dispose()
     }
 
     del(k: K) {
-        this.#del(k);
+        const p = this.#map.get(k)
         this.#map.delete(k);
         this.#set();
+        p?.run_dispose()
     }
 }

@@ -1,8 +1,9 @@
 import { timeout, Variable } from 'astal';
+import { Astal } from 'astal/gtk4';
 import Notifd from 'gi://AstalNotifd';
 
 import { Event, Props } from '../lib/util';
-import { Action, Dropdown, Image, Lazy, Markup, Toggle } from '../lib/widget';
+import { Action, Dropdown, Lazy, Markup, Toggle } from '../lib/widget';
 
 const ICONS = {
     Icon: '\u{f035c}',
@@ -10,11 +11,17 @@ const ICONS = {
 
 const icon = (n: Notifd.Notification) => {
     if (n.image) {
-        return <Image className="icon" image={n.image} valign={START} />;
+        return <image cssClasses={['icon']} file={n.image} valign={Align.START} />;
     }
 
     if (n.desktop_entry || n.app_icon) {
-        return <icon className="icon" icon={n.desktop_entry || n.app_icon} valign={START} />;
+        return (
+            <image
+                cssClasses={['icon']}
+                iconName={n.desktop_entry || n.app_icon}
+                valign={Align.START}
+            />
+        );
     }
 
     return undefined;
@@ -26,19 +33,22 @@ const popup = (n: Notifd.Notification) => {
     return [
         n.id,
         <Action actions={customActions.map(({ id, label }) => [label, () => n.invoke(id)])}>
-            <eventbox
+            <box
                 {...Event.click(
                     () => defaultAction && n.invoke(defaultAction.id),
                     () => n.dismiss(),
                 )}>
-                <box>
-                    {icon(n)}
-                    <box vertical hexpand vexpand>
-                        <Markup className="title" label={n.summary} xalign={0} truncate />
-                        <Markup label={n.body} xalign={0} wrap />
-                    </box>
+                {icon(n)}
+                <box vertical hexpand vexpand>
+                    <Markup
+                        cssClasses={['title']}
+                        label={n.summary}
+                        xalign={0}
+                        ellipsize={Ellipsize.END}
+                    />
+                    <Markup label={n.body} xalign={0} wrap />
                 </box>
-            </eventbox>
+            </box>
         </Action>,
     ] as const;
 };
@@ -80,7 +90,7 @@ export default ({ ctx, monitor }: Props) => {
                 {popups()}
             </box>
         </Dropdown>
-    );
+    ) as Astal.Window;
 
     const bound = all();
     return (

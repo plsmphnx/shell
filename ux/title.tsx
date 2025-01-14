@@ -14,11 +14,11 @@ const CTX = Context(() => {
 
 export default ({ ctx, monitor }: Props) => (
     <button
-        className="target"
+        cssClasses={['target']}
         visible={CTX(ctx).monitor.as(m => m === monitor)}
         {...Event.click('hyprjump movetoworkspace free', () =>
             Hyprland.get_default().dispatch('killactive', ''),
         )}>
-        <label label={CTX(ctx).title} truncate />
+        <label label={CTX(ctx).title} ellipsize={Ellipsize.END} />
     </button>
 );

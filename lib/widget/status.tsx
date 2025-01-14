@@ -1,17 +1,17 @@
 import { Binding } from 'astal';
-import { Astal, Widget } from 'astal/gtk3';
+import { Gdk, Gtk, Widget } from 'astal/gtk4';
 
 import { Event } from '../util';
 
 export interface Props extends Omit<Widget.ButtonProps, 'child'> {
     reveal?: Binding<boolean>;
-    onPrimary?: ((obj: Widget.Button, evt: Astal.ClickEvent) => unknown) | string;
-    onSecondary?: ((obj: Widget.Button, evt: Astal.ClickEvent) => unknown) | string;
+    onPrimary?: ((obj: Gtk.Button, evt: Gdk.ButtonEvent) => unknown) | string;
+    onSecondary?: ((obj: Gtk.Button, evt: Gdk.ButtonEvent) => unknown) | string;
 }
 
 export default ({ reveal, onPrimary, onSecondary, ...rest }: Props) =>
     reveal ? (
-        <revealer revealChild={reveal} transitionType={SLIDE_LEFT} transitionDuration={500}>
+        <revealer revealChild={reveal} transitionType={Transition.SLIDE_LEFT} transitionDuration={500}>
             <button {...rest} {...Event.click(onPrimary, onSecondary)} />
         </revealer>
     ) : (

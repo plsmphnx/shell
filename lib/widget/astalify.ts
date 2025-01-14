@@ -1,12 +1,4 @@
-import { GObject } from 'astal';
-import { astalify, ConstructProps, Gtk } from 'astal/gtk3';
+import { astalify, Gtk } from 'astal/gtk4';
 
-export type CalendarProps = ConstructProps<Calendar, Gtk.Calendar.ConstructorProps>;
-export class Calendar extends astalify(Gtk.Calendar) {
-    static {
-        GObject.registerClass({ GTypeName: 'Calendar' }, this);
-    }
-    constructor(props?: CalendarProps) {
-        super(props as any);
-    }
-}
+export const Calendar = astalify<Gtk.Calendar, Gtk.Calendar.ConstructorProps>(Gtk.Calendar);
+export const ScrolledWindow = astalify<Gtk.ScrolledWindow, Gtk.ScrolledWindow.ConstructorProps>(Gtk.ScrolledWindow);

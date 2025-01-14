@@ -1,4 +1,4 @@
-import { App } from 'astal/gtk3';
+import { App, Astal } from 'astal/gtk4';
 import Hyprland from 'gi://AstalHyprland';
 
 import './globals';
@@ -17,8 +17,12 @@ App.start({
     main() {
         Client.reload(ctx);
         const hyprland = Hyprland.get_default();
-        const lazy = new Map(hyprland.monitors.map(m => [m.id, Bar({ ctx, monitor: m })]));
-        hyprland.connect('monitor-added', (_, m) => lazy.set(m.id, Bar({ ctx, monitor: m })));
+        const lazy = new Map(
+            hyprland.monitors.map(m => [m.id, Bar({ ctx, monitor: m }) as Astal.Window]),
+        );
+        hyprland.connect('monitor-added', (_, m) =>
+            lazy.set(m.id, Bar({ ctx, monitor: m }) as Astal.Window),
+        );
         hyprland.connect('monitor-removed', (_, m) => (lazy.get(m)?.close(), lazy.delete(m)));
     },
 

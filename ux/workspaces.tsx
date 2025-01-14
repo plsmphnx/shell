@@ -67,7 +67,7 @@ export default ({ ctx, monitor }: Props) => {
         w => [
             w.id,
             <button
-                className={f.as(f => (f === w ? 'target' : 'unfocused target'))}
+                cssClasses={f.as(f => (f === w ? ['target'] : ['unfocused', 'target']))}
                 label={bind(reduce(LABELS(ctx)(l => l.workspace[w.id] || '')))}
                 visible={bind(w, 'monitor').as(m => m === monitor)}
                 onClicked={() => hyprland.dispatch('workspace', String(w.id))}
@@ -81,15 +81,17 @@ export default ({ ctx, monitor }: Props) => {
     ];
 
     return (
-        <box className="workspaces" onDestroy={() => conn.map(id => hyprland.disconnect(id))}>
+        <box
+            cssClasses={['workspaces']}
+            onDestroy={() => conn.map(id => hyprland.disconnect(id))}>
             <box noImplicitDestroy={true}>{lazy()}</box>
-            <box className="dim status">
+            <box cssClasses={['dim', 'status']}>
                 <label
                     label={bind(reduce(LABELS(ctx)(l => l.pinned[monitor.name] || '')))}
                     visible={LABELS(ctx)(l => !!l.pinned[monitor.name])}
                 />
                 <label
-                    className={SUBMAP(ctx)(s => (s ? '' : 'hidden'))}
+                    cssClasses={SUBMAP(ctx)(s => (s ? [] : ['hidden']))}
                     label={SUBMAP(ctx)(s => s || SPACE)}
                 />
             </box>

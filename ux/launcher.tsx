@@ -1,10 +1,10 @@
 import { Variable } from 'astal';
-import { Gtk, Widget } from 'astal/gtk3';
+import { Astal, Gtk, Widget } from 'astal/gtk4';
 import Apps from 'gi://AstalApps';
 import Gio from 'gi://Gio';
 
 import { Event, Widget as WidgetUtil } from '../lib/util';
-import { Closer } from '../lib/widget';
+import { Closer, ScrolledWindow } from '../lib/widget';
 
 const ICONS = {
     More: '\u{f0142}',
@@ -12,14 +12,14 @@ const ICONS = {
 };
 
 interface Context {
-    entry: Widget.Entry;
-    scroll: Widget.Scrollable;
-    window: Widget.Window;
+    entry: Gtk.Entry;
+    scroll: Gtk.ScrolledWindow;
+    window: Astal.Window;
 }
 
 const item = (app: Apps.Application, ctx: Context) => {
     const Text = (props: Widget.LabelProps) => (
-        <label {...props} xalign={0} valign={CENTER} truncate />
+        <label {...props} xalign={0} valign={Align.CENTER} ellipsize={Ellipsize.END} />
     );
     const Button = (props: Widget.ButtonProps) => (
         <button
@@ -31,7 +31,7 @@ const item = (app: Apps.Application, ctx: Context) => {
     const Primary = ({ child, ...rest }: Widget.ButtonProps) => (
         <Button {...rest}>
             <box>
-                <icon className="icon" icon={app.icon_name || ''} />
+                <image cssClasses={['icon']} iconName={app.icon_name || ''} />
                 <Text label={app.name} />
                 {child}
             </box>
@@ -53,14 +53,17 @@ const item = (app: Apps.Application, ctx: Context) => {
             <Primary
                 {...Event.click(launch, toggle)}
                 {...Event.key({ Return: launch, Right: open, Left: close })}>
-                <Text className="actions" label={show(s => (s ? ICONS.Less : ICONS.More))} />
+                <Text
+                    cssClasses={['actions']}
+                    label={show(s => (s ? ICONS.Less : ICONS.More))}
+                />
             </Primary>
         );
 
         return (
             <box vertical>
                 {primary}
-                <revealer revealChild={show()} transitionType={SLIDE_DOWN}>
+                <revealer revealChild={show()} transitionType={Transition.SLIDE_DOWN}>
                     <box vertical>
                         {list.map(a => {
                             const action = () => (
@@ -79,7 +82,7 @@ const item = (app: Apps.Application, ctx: Context) => {
             </box>
         );
     } else {
-        return <Primary onClick={launch} {...Event.key({ Return: launch })} />;
+        return <Primary onClicked={launch} {...Event.key({ Return: launch })} />;
     }
 };
 
@@ -90,7 +93,7 @@ export default () => {
     const text = Variable('');
     const list = text(t => apps.exact_query(t));
 
-    const closer = <Closer onClose={() => ctx.window.close()} />;
+    const closer = (<Closer onClose={() => ctx.window.close()} />) as Astal.Window;
 
     return (
         <window
@@ -100,19 +103,19 @@ export default () => {
             {...Event.key({ Escape: () => ctx.window.close() })}
             onDestroy={() => closer.destroy()}
             setup={self => (ctx.window = self)}>
-            <box className="launcher" vertical>
+            <box cssClasses={['launcher']} vertical>
                 <entry
                     hexpand
                     onChanged={self => text.set(self.text)}
                     onActivate={() => (ctx.window.close(), list.get()[0]?.launch())}
                     setup={self => (ctx.entry = self)}
                 />
-                <scrollable
-                    hscroll={NEVER}
-                    vscroll={EXTERNAL}
+                <ScrolledWindow
+                    hscrollbarPolicy={Policy.NEVER}
+                    vscrollbarPolicy={Policy.EXTERNAL}
                     setup={self => (ctx.scroll = self)}>
                     <box vertical>{list.as(apps => apps.map(app => item(app, ctx)))}</box>
-                </scrollable>
+                </ScrolledWindow>
             </box>
         </window>
     );

@@ -1,5 +1,5 @@
 import { bind, Binding } from 'astal';
-import { Gtk } from 'astal/gtk3';
+import { Gtk } from 'astal/gtk4';
 import Hyprland from 'gi://AstalHyprland';
 
 import { join } from '../sub';
@@ -30,7 +30,7 @@ export default ({ monitor, reveal, onReveal, child }: Props) => {
                 revealChild={join(reveal, bind(Hyprland.get_default(), 'focused_monitor')).as(
                     (o, f) => o && f === monitor,
                 )}
-                transitionType={SLIDE_DOWN}
+                transitionType={Transition.SLIDE_DOWN}
                 transitionDuration={1000}>
                 {child}
             </revealer>

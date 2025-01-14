@@ -1,4 +1,5 @@
 import { Variable } from 'astal';
+import { Astal } from 'astal/gtk4';
 
 import Closer from './closer';
 import Dropdown, { Props as DropdownProps } from './dropdown';
@@ -24,8 +25,8 @@ export default ({ id, ctx, reveal, monitor, child, onReveal, onDestroy, ...rest 
         <Dropdown {...window} onReveal={onReveal}>
             {child}
         </Dropdown>
-    );
-    const close = <Closer {...window} onClose={() => open.set(false)} />;
+    ) as Astal.Window;
+    const close = (<Closer {...window} onClose={() => open.set(false)} />) as Astal.Window;
     return (
         <Status
             {...rest}

@@ -101,18 +101,14 @@ const CTX = Context(() => {
 export default ({ ctx, monitor }: Props) => (
     <Toggle
         id="power"
-        className="status"
+        cssClasses={['status']}
         ctx={ctx}
         monitor={monitor}
         label={CTX(ctx).icon}
         tooltipText={CTX(ctx).tooltip}>
-        <box className="menu" vertical>
+        <box cssClasses={['menu']} vertical>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
-                <button
-                    label={(ICONS.Commands as any)[name]}
-                    css="font-size: 150%"
-                    onClicked={cmd}
-                />
+                <button label={(ICONS.Commands as any)[name]} onClicked={cmd} />
             ))}
         </box>
     </Toggle>

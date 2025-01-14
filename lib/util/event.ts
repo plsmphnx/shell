@@ -1,5 +1,5 @@
 import { execAsync } from 'astal';
-import { Astal, Gdk, Gtk } from 'astal/gtk3';
+import { Gdk, Gtk } from 'astal/gtk4';
 
 export type Callback<T extends Gtk.Widget, E> = (obj: T, evt: E) => unknown;
 export type Handler<T extends Gtk.Widget, E> = Callback<T, E> | string;
@@ -9,30 +9,29 @@ function cb<T extends Gtk.Widget, E>(h?: Handler<T, E>): Callback<T, E> {
 }
 
 export function click<T extends Gtk.Widget>(
-    primary?: Handler<T, Astal.ClickEvent>,
-    secondary?: Handler<T, Astal.ClickEvent>,
+    primary?: Handler<T, Gdk.ButtonEvent>,
+    secondary?: Handler<T, Gdk.ButtonEvent>,
 ) {
     primary = cb(primary);
     secondary = cb(secondary);
     return {
-        onClick: (obj: T, evt: Astal.ClickEvent): unknown => {
-            switch (evt.button) {
-                case Mouse.PRIMARY:
+        onButtonPressed: (obj: T, evt: Gdk.ButtonEvent): unknown => {
+            switch (evt.get_button()) {
+                case 1:
                     return primary(obj, evt);
-                case Mouse.SECONDARY:
+                case 3:
                     return secondary(obj, evt);
             }
         },
     };
 }
 
-export function key<T extends Gtk.Widget>(keys: { [key: string]: Handler<T, Gdk.Event> }) {
-    const cbs: { [key: number]: Callback<T, Gdk.Event> } = {};
+export function key<T extends Gtk.Widget>(keys: { [key: string]: Handler<T, void> }) {
+    const cbs: { [key: number]: Callback<T, void> } = {};
     for (const [k, v] of Object.entries(keys)) {
         cbs[Gdk.keyval_from_name(k)] = cb(v);
     }
     return {
-        onKeyPressEvent: (obj: T, evt: Gdk.Event): unknown =>
-            cbs[evt.get_keyval()[1]]?.(obj, evt),
+        onKeyPressed: (obj: T, keyval: number): unknown => cbs[keyval]?.(obj),
     };
 }
