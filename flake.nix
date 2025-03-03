@@ -4,47 +4,33 @@
       url = "github:aylur/astal";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    ags = {
-      url = "github:aylur/ags";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        astal.follows = "astal";
-      };
-    };
+    crane.url = "github:ipetkov/crane";
   };
-  outputs = { self, nixpkgs, ags, astal }: let
-    systems = fn: nixpkgs.lib.mapAttrs fn nixpkgs.legacyPackages;
-
-    libs = pkgs: with pkgs; [
-      apps
-      battery
-      bluetooth
-      hyprland
-      mpris
-      network
-      notifd
-      tray
-      wireplumber
-    ];
-  in {
-    packages = systems (system: pkgs: {
-      default = ags.lib.bundle {
+  outputs = { self, nixpkgs, astal, crane }: {
+    packages = nixpkgs.lib.mapAttrs (system: pkgs: let
+      tools = crane.mkLib pkgs;
+      cargo = tools.appliedCargoNix {
         name = "shell";
         src = ./.;
-
-        inherit pkgs;
-        extraPackages = libs astal.packages.${system};
       };
-    });
+    in {
+      default = tools.buildPackage {
+        src = tools.cleanCargoSource ./.;
+        buildInputs = with astal.packages.${system}; [
+          astal4
+          io
 
-    devShells = systems (system: pkgs: {
-      default = pkgs.mkShell {
-        buildInputs = [
-          (ags.packages.${system}.default.override { 
-            extraPackages = libs astal.packages.${system};
-          })
+          apps
+          battery
+          bluetooth
+          hyprland
+          mpris
+          network
+          notifd
+          tray
+          wireplumber
         ];
       };
-    });
+    }) nixpkgs.legacyPackages;
   };
 }
