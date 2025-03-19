@@ -37,13 +37,13 @@ const MICROPHONE = Context(() =>
 );
 
 export const Speaker = ({ ctx }: Context.Props) => (
-    <Status label={SPEAKER(ctx)} onPrimary="pavucontrol" />
+    <Status label={SPEAKER(ctx)} onPrimary="pwvucontrol" />
 );
 
 export const Microphone = ({ ctx }: Context.Props) => (
     <Status
         label={MICROPHONE(ctx)}
-        onPrimary="pavucontrol"
+        onPrimary="pwvucontrol"
         reveal={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
     />
 );
