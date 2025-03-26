@@ -1,5 +1,6 @@
 @girs/
 node_modules/
-result
 env.d.ts
+package.json
+result
 tsconfig.json

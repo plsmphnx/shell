@@ -15,14 +15,9 @@ export function select(...icons: string[]) {
 export namespace Client {
     const ICONS = Context(() => Variable<[string, string][]>([]));
 
-    export function reload(ctx: Context) {
+    export function reload(ctx: Context, icons: [string, string][]) {
         ICONS(ctx).set(
-            readFile(`${GLib.getenv('HOME')}/.local/share/ux/icons.txt`)
-                .split('\n')
-                .map(l => l.trim())
-                .filter(l => l)
-                .map(l => l.split(/\s+/))
-                .map(([cls, hex]) => [cls, String.fromCodePoint(parseInt(hex, 16))]),
+            icons.map(([cls, hex]) => [cls, String.fromCodePoint(parseInt(hex, 16))]),
         );
     }
 

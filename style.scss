@@ -1,32 +1,40 @@
-$shd: rgba(255, 255, 255, 0.2);
-$dim: rgba(255, 255, 255, 0.4);
-$txt: rgba(255, 255, 255, 0.8);
+$shd: #{'alpha(var(--fg), 0.2)'};
+$dim: #{'alpha(var(--fg), 0.4)'};
+$txt: #{'alpha(var(--fg), 0.8)'};
 
-$bg: rgba(0, 0, 0, 0.4);
+$bc: #{'var(--bg)'};
+$bg: #{'alpha(var(--bg), 0.4)'};
 
-$border: 2px;
-$radius: 4px;
+$font: #{'var(--font)'};
+$gap: #{'var(--gap)'};
+
+$border: #{'var(--border)'};
+$radius: #{'var(--radius)'};
+
+$bdimsrc: #{'var(--image0)'};
+$bdimcut: #{'var(--slice0)'};
+$bdimsiz: #{'var(--width0)'};
+$btxtsrc: #{'var(--image1)'};
+$btxtcut: #{'var(--slice1)'};
+$btxtsiz: #{'var(--width1)'};
+
 $margin: 0.5em;
-
 $icon: 2em + (2 * $margin);
 $popup: 8 * $icon;
-
-$font: 'Noto Sans Mono';
-$symbols: 'Symbols Nerd Font Mono';
 
 * {
     all: unset;
 }
 
 window {
-    font-family: $font, $symbols;
+    font-family: 'Symbols Nerd Font Mono', $font;
     font-size: 14px;
     color: $txt;
 }
 
 .bar {
-    background-color: black;
-    padding-bottom: $border;
+    background-color: $bc;
+    padding-bottom: $gap;
 }
 
 .status {
@@ -40,10 +48,13 @@ window {
 
 @mixin target {
     background-clip: padding-box;
-    border-radius: (2 * $radius);
+    border-radius: calc($border + $radius);
     border-style: solid;
-    border-width: 0 $border;
+    border-width: $border;
     border-color: $dim;
+    border-image-source: $bdimsrc;
+    border-image-slice: $bdimcut;
+    border-image-width: $bdimsiz;
     padding: 0 $margin;
 }
 
@@ -53,6 +64,9 @@ window {
 
 button.target:hover {
     border-color: $txt;
+    border-image-source: $btxtsrc;
+    border-image-slice: $btxtcut;
+    border-image-width: $btxtsiz;
 }
 
 @mixin float {
@@ -69,12 +83,13 @@ button.target:hover {
 .workspaces {
     padding: 0 calc($border / 2);
     label {
-        font: 125% $symbols;
+        font-size: 125%;
     }
     button {
         margin: 0 calc($border / -2);
         &.unfocused:not(:hover) {
             border-color: transparent;
+            border-image: none;
         }
     }
 }

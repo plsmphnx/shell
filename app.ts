@@ -2,9 +2,8 @@ import { App } from 'astal/gtk3';
 import Hyprland from 'gi://AstalHyprland';
 
 import './globals';
-import style from './style.scss';
 
-import { Client } from './lib/icons';
+import * as Config from './lib/config';
 import { Context } from './lib/util';
 
 import Bar from './ux/bar';
@@ -13,9 +12,8 @@ import Launcher from './ux/launcher';
 const ctx: Context = {};
 
 App.start({
-    css: style,
     main() {
-        Client.reload(ctx);
+        Config.reload(ctx);
         const hyprland = Hyprland.get_default();
         const lazy = new Map(hyprland.monitors.map(m => [m.id, Bar({ ctx, monitor: m })]));
         hyprland.connect('monitor-added', (_, m) => lazy.set(m.id, Bar({ ctx, monitor: m })));
@@ -32,7 +30,7 @@ App.start({
                 Launcher();
                 break;
             case 'reload':
-                Client.reload(ctx);
+                Config.reload(ctx);
                 break;
             case 'quit':
                 App.quit();
