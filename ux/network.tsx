@@ -1,6 +1,7 @@
 import { bind } from 'astal';
 import Network from 'gi://AstalNetwork';
 
+import { utils } from '../lib/config';
 import { select } from '../lib/icons';
 import { join } from '../lib/sub';
 import { Context } from '../lib/util';
@@ -36,5 +37,5 @@ const ICON = Context(() => {
 });
 
 export default ({ ctx }: Context.Props) => (
-    <Status label={ICON(ctx)} onPrimary="iwgtk" onSecondary="nm-connection-editor" />
+    <Status label={ICON(ctx)} {...utils(ctx, 'network')} />
 );

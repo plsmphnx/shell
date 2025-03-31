@@ -1,6 +1,7 @@
 import { bind } from 'astal';
 import Wp from 'gi://AstalWp';
 
+import { utils } from '../lib/config';
 import { select } from '../lib/icons';
 import { join, reduce } from '../lib/sub';
 import { Context, Select } from '../lib/util';
@@ -37,13 +38,13 @@ const MICROPHONE = Context(() =>
 );
 
 export const Speaker = ({ ctx }: Context.Props) => (
-    <Status label={SPEAKER(ctx)} onPrimary="pwvucontrol" />
+    <Status label={SPEAKER(ctx)} {...utils(ctx, 'speaker')} />
 );
 
 export const Microphone = ({ ctx }: Context.Props) => (
     <Status
         label={MICROPHONE(ctx)}
-        onPrimary="pwvucontrol"
+        {...utils(ctx, 'microphone')}
         reveal={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
     />
 );

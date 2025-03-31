@@ -2,21 +2,21 @@ $shd: #{'alpha(var(--fg), 0.2)'};
 $dim: #{'alpha(var(--fg), 0.4)'};
 $txt: #{'alpha(var(--fg), 0.8)'};
 
-$bc: #{'var(--bg)'};
+$bc: var(--bg);
 $bg: #{'alpha(var(--bg), 0.4)'};
 
-$font: #{'var(--font)'};
-$gap: #{'var(--gap)'};
+$font: var(--font);
+$gap: var(--gap);
 
-$border: #{'var(--border)'};
-$radius: #{'var(--radius)'};
+$border: var(--border);
+$radius: var(--radius);
 
-$bdimsrc: #{'var(--image0)'};
-$bdimcut: #{'var(--slice0)'};
-$bdimsiz: #{'var(--width0)'};
-$btxtsrc: #{'var(--image1)'};
-$btxtcut: #{'var(--slice1)'};
-$btxtsiz: #{'var(--width1)'};
+$bdimsrc: var(--image0);
+$bdimcut: var(--slice0);
+$bdimsiz: var(--width0);
+$btxtsrc: var(--image1);
+$btxtcut: var(--slice1);
+$btxtsiz: var(--width1);
 
 $margin: 0.5em;
 $icon: 2em + (2 * $margin);

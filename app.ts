@@ -3,7 +3,7 @@ import Hyprland from 'gi://AstalHyprland';
 
 import './globals';
 
-import * as Config from './lib/config';
+import { reload } from './lib/config';
 import { Context } from './lib/util';
 
 import Bar from './ux/bar';
@@ -13,7 +13,7 @@ const ctx: Context = {};
 
 App.start({
     main() {
-        Config.reload(ctx);
+        reload(ctx);
         const hyprland = Hyprland.get_default();
         const lazy = new Map(hyprland.monitors.map(m => [m.id, Bar({ ctx, monitor: m })]));
         hyprland.connect('monitor-added', (_, m) => lazy.set(m.id, Bar({ ctx, monitor: m })));
@@ -30,7 +30,7 @@ App.start({
                 Launcher();
                 break;
             case 'reload':
-                Config.reload(ctx);
+                reload(ctx);
                 break;
             case 'quit':
                 App.quit();

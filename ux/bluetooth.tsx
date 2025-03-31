@@ -1,6 +1,7 @@
 import { bind } from 'astal';
 import Bluetooth from 'gi://AstalBluetooth';
 
+import { utils } from '../lib/config';
 import { join } from '../lib/sub';
 import { Context } from '../lib/util';
 import { Status } from '../lib/widget';
@@ -18,4 +19,6 @@ const ICON = Context(() => {
     );
 });
 
-export default ({ ctx }: Context.Props) => <Status label={ICON(ctx)} onPrimary="blueberry" />;
+export default ({ ctx }: Context.Props) => (
+    <Status label={ICON(ctx)} {...utils(ctx, 'bluetooth')} />
+);

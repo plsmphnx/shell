@@ -1,4 +1,4 @@
-import { GLib, readFile, Variable } from 'astal';
+import { Variable } from 'astal';
 import Hyprland from 'gi://AstalHyprland';
 
 import { Context } from './util';
