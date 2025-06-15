@@ -1,23 +1,22 @@
-import { App } from 'astal/gtk3';
-import Hyprland from 'gi://AstalHyprland';
+import { createRoot, For } from 'ags';
+import { Gdk } from 'ags/gtk4';
+import App from 'ags/gtk4/app';
 
 import './globals';
 
-import { reload } from './lib/config';
-import { Context } from './lib/util';
+import { bind } from './lib/sub';
+import { Config, Monitor } from './lib/util';
 
 import Bar from './ux/bar';
 import Launcher from './ux/launcher';
 
-const ctx: Context = {};
-
 App.start({
     main() {
-        reload(ctx);
-        const hyprland = Hyprland.get_default();
-        const lazy = new Map(hyprland.monitors.map(m => [m.id, Bar({ ctx, monitor: m })]));
-        hyprland.connect('monitor-added', (_, m) => lazy.set(m.id, Bar({ ctx, monitor: m })));
-        hyprland.connect('monitor-removed', (_, m) => (lazy.get(m)?.close(), lazy.delete(m)));
+        Config.reload();
+        For({
+            each: bind(App, 'monitors'),
+            children: (gdk: Gdk.Monitor) => Monitor.Context({ value: { gdk }, children: Bar }),
+        });
     },
 
     client(msg: (msg: string) => string, ...args: string[]) {
@@ -27,10 +26,10 @@ App.start({
     requestHandler(req, ret) {
         switch (req) {
             case 'launch':
-                Launcher();
+                createRoot(Launcher);
                 break;
             case 'reload':
-                reload(ctx);
+                Config.reload();
                 break;
             case 'quit':
                 App.quit();

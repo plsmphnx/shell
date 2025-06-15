@@ -6,7 +6,6 @@ $bc: var(--bg);
 $bg: #{'alpha(var(--bg), 0.4)'};
 
 $font: var(--font);
-$gap: var(--gap);
 
 $border: var(--border);
 $radius: var(--radius);
@@ -34,12 +33,10 @@ window {
 
 .bar {
     background-color: $bc;
-    padding-bottom: $gap;
 }
 
 .status {
     padding: 0 calc($margin / 2);
-    icon,
     image,
     label {
         padding: 0 calc($margin / 2);
@@ -60,13 +57,12 @@ window {
 
 .target {
     @include target;
-}
-
-button.target:hover {
-    border-color: $txt;
-    border-image-source: $btxtsrc;
-    border-image-slice: $btxtcut;
-    border-image-width: $btxtsiz;
+    &:hover {
+        border-color: $txt;
+        border-image-source: $btxtsrc;
+        border-image-slice: $btxtcut;
+        border-image-width: $btxtsiz;
+    }
 }
 
 @mixin float {
@@ -76,17 +72,12 @@ button.target:hover {
     padding: $margin;
 }
 
-.float {
-    @include float;
-}
-
 .workspaces {
     padding: 0 calc($border / 2);
     label {
-        font-size: 125%;
-    }
-    button {
+        padding: 0 calc($margin / 1.25);
         margin: 0 calc($border / -2);
+        font-size: 125%;
         &.unfocused:not(:hover) {
             border-color: transparent;
             border-image: none;
@@ -127,11 +118,10 @@ button.target:hover {
 }
 
 .icon {
-    font-size: 250%;
-    min-width: (0.4 * $icon);
-    min-height: (0.4 * $icon);
+    min-width: $icon;
+    min-height: $icon;
     border-radius: $radius;
-    margin-right: (0.4 * $margin);
+    margin-right: $margin;
     background-position: center;
     background-size: contain;
     background-repeat: no-repeat;
@@ -141,8 +131,8 @@ button.target:hover {
     > * {
         @include float;
     }
-    > scrollable {
-        min-width: (2 * $popup);
+    scrolledwindow {
+        min-width: $popup;
         min-height: $popup;
         padding: 0;
     }
@@ -154,7 +144,7 @@ button.target:hover {
             background-color: $shd;
         }
     }
-    entry:focus + * button:hover {
+    entry:focus-within + * button:hover {
         background-color: $shd;
     }
     .actions {
@@ -170,9 +160,10 @@ tooltip {
     @include float;
 }
 
-@mixin menu($item) {
+.menu {
     @include float;
-    #{$item} {
+    button,
+    modelbutton {
         &:not(:hover) {
             color: $dim;
         }
@@ -180,14 +171,6 @@ tooltip {
             margin-top: calc($margin / 2);
         }
     }
-}
-
-.menu {
-    @include menu(button);
-}
-
-menu {
-    @include menu(menuitem);
 }
 
 trough {
@@ -209,18 +192,16 @@ slider {
     }
 }
 
-.calendar {
+calendar {
     @include float;
-    calendar {
-        color: $dim;
-        padding: (0.5 * $margin);
-        .header,
-        .highlight,
-        :selected {
-            color: $txt;
-        }
-        :indeterminate {
-            color: $shd;
-        }
+    color: $dim;
+    padding: $margin;
+    header,
+    .day-name,
+    :selected {
+        color: $txt;
+    }
+    .other-month {
+        color: $shd;
     }
 }

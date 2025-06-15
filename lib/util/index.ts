@@ -1,13 +1,10 @@
-import { Context } from './context';
-import * as Monitor from './monitor';
-
-export { Context } from './context';
+export * as Config from './config';
 export * as Event from './event';
+export * as Icon from './icon';
 export * as Monitor from './monitor';
-export * as Widget from './widget';
+export * as Props from './props';
+export { Static } from './static';
 
 export type Select<T, U> = {
     [P in keyof T as T[P] extends U | undefined ? P : never]: T[P];
 };
-
-export interface Props extends Context.Props, Monitor.Props {}

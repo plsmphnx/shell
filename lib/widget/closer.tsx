@@ -1,19 +1,22 @@
-import { Binding } from 'astal';
+import { onCleanup } from 'ags';
+import { Astal } from 'ags/gtk4';
 
-import { Monitor } from '../util';
+import { Event, Monitor, Props } from '../util';
 
-export interface Props extends Partial<Monitor.Props> {
-    reveal?: boolean | Binding<boolean>;
-    onClose: () => unknown;
+import { Workaround } from './workaround';
+
+export namespace Closer {
+    export type Props = Pick<Props.Window, 'visible' | '$close'>;
 }
-export default ({ reveal, monitor, onClose }: Props) => (
+export const Closer = ({ visible, $close }: Closer.Props) => (
     <window
-        namespace="closer"
-        {...Monitor.gdk(monitor)}
+        {...Monitor.window()}
         anchor={Anchor.TOP | Anchor.RIGHT | Anchor.LEFT | Anchor.BOTTOM}
         layer={Layer.TOP}
         keymode={Keymode.NONE}
-        visible={reveal ?? true}>
-        <eventbox hexpand vexpand onClick={onClose} />
+        visible={visible}
+        $={self => onCleanup(() => self.run_dispose())}>
+        <Event.Click $any={evt => $close(evt.widget as Astal.Window)} />
+        <Workaround />
     </window>
 );

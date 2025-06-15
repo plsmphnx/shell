@@ -1,50 +1,45 @@
-import { bind } from 'astal';
 import Wp from 'gi://AstalWp';
 
-import { utils } from '../lib/config';
-import { select } from '../lib/icons';
-import { join, reduce } from '../lib/sub';
-import { Context, Select } from '../lib/util';
+import { bind, reduce, watch } from '../lib/sub';
+import { Config, Icon, Select, Static } from '../lib/util';
 import { Status } from '../lib/widget';
 
 const ICONS = {
     Speaker: {
         Off: '\u{f0e08}',
-        On: select('\u{f057f}', '\u{f0580}', '\u{f057e}'),
+        On: Icon.select('\u{f057f}', '\u{f0580}', '\u{f057e}'),
     },
 
     Microphone: {
         Off: '\u{f036d}',
-        On: select('\u{f036c}'),
+        On: Icon.select('\u{f036c}'),
     },
 };
 
 function icon(
-    audio: Wp.Audio,
     icons: { Off: string; On: (volume: number) => string },
     device: keyof Select<Wp.Audio, Wp.Endpoint>,
 ) {
-    const dev = bind(audio, device);
-    return join(
-        reduce(dev.as(d => bind(d, 'mute'))),
-        reduce(dev.as(d => bind(d, 'volume'))),
-    ).as((mute, volume) => (mute || volume === 0 ? icons.Off : icons.On(volume)));
+    const dev = bind(Wp.get_default()!.audio, device);
+    return reduce(
+        dev(dev =>
+            watch(dev, ['mute', 'volume'], ({ mute, volume }) =>
+                mute || volume === 0 ? icons.Off : icons.On(volume),
+            ),
+        ),
+    );
 }
 
-const SPEAKER = Context(() => icon(Wp.get_default()!.audio, ICONS.Speaker, 'default_speaker'));
+const SPEAKER = Static(() => icon(ICONS.Speaker, 'default_speaker'));
 
-const MICROPHONE = Context(() =>
-    icon(Wp.get_default()!.audio, ICONS.Microphone, 'default_microphone'),
-);
+const MICROPHONE = Static(() => icon(ICONS.Microphone, 'default_microphone'));
 
-export const Speaker = ({ ctx }: Context.Props) => (
-    <Status label={SPEAKER(ctx)} {...utils(ctx, 'speaker')} />
-);
+export const Speaker = () => <Status label={SPEAKER()} {...Config.utils('speaker')} />;
 
-export const Microphone = ({ ctx }: Context.Props) => (
+export const Microphone = () => (
     <Status
-        label={MICROPHONE(ctx)}
-        {...utils(ctx, 'microphone')}
-        reveal={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
+        label={MICROPHONE()}
+        {...Config.utils('microphone')}
+        visible={bind(Wp.get_default()!.audio, 'recorders')(r => r.length > 0)}
     />
 );

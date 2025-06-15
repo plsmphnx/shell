@@ -1,24 +1,27 @@
-import { bind } from 'astal';
+import { execAsync } from 'ags/process';
+
 import Hyprland from 'gi://AstalHyprland';
 
-import { reduce } from '../lib/sub';
-import { Context, Event, Props } from '../lib/util';
+import { bind, reduce } from '../lib/sub';
+import { Event, Monitor, Static } from '../lib/util';
 
-const CTX = Context(() => {
-    const focused = bind(Hyprland.get_default(), 'focused_client');
-    return {
-        title: bind(reduce(focused.as(f => (f ? bind(f, 'title') : '')))),
-        monitor: bind(reduce(focused.as(f => f && bind(f, 'monitor')))),
-    };
-});
+function focused<K extends keyof Hyprland.Client>(key: Extract<K, string>) {
+    return reduce(bind(Hyprland.get_default(), 'focused_client')(f => f && bind(f, key)));
+}
 
-export default ({ ctx, monitor }: Props) => (
-    <button
-        className="target"
-        visible={CTX(ctx).monitor.as(m => m === monitor)}
-        {...Event.click('hyprjump movetoworkspace free', () =>
-            Hyprland.get_default().dispatch('killactive', ''),
-        )}>
-        <label label={CTX(ctx).title} truncate />
-    </button>
+const TITLE = Static(() => focused('title')(t => t || ''));
+
+const MONITOR = Static(() => focused('monitor'));
+
+export default () => (
+    <label
+        class="target"
+        visible={Monitor.is(MONITOR())}
+        label={TITLE()}
+        ellipsize={Ellipsize.END}>
+        <Event.Click
+            $left={() => execAsync('hyprjump movetoworkspace free')}
+            $right={() => Hyprland.get_default().dispatch('killactive', '')}
+        />
+    </label>
 );

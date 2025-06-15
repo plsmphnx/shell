@@ -1,96 +1,62 @@
-import { bind, Binding, Variable } from 'astal';
+import { For } from 'ags';
+
 import Hyprland from 'gi://AstalHyprland';
 
-import { Client, SPACE } from '../lib/icons';
-import { join, reduce } from '../lib/sub';
-import { Context, Props } from '../lib/util';
-import { Lazy } from '../lib/widget';
+import { bind, compute, observe, reduce } from '../lib/sub';
+import { Event, Icon, Monitor, Static } from '../lib/util';
 
-interface Labels {
-    workspace: { [id: string]: Binding<string> };
-    pinned: { [id: string]: Binding<string> };
-}
-
-function label(ctx: Context, { clients }: Hyprland.Hyprland) {
-    const workspace: { [id: PropertyKey]: Hyprland.Client[] } = {};
-    const pinned: { [id: PropertyKey]: Hyprland.Client[] } = {};
-    for (const c of clients) {
-        if (c.workspace.id > 0 && c.pid > 0) {
-            const id = c.pinned ? c.monitor.name : c.workspace.id;
-            const g = c.pinned ? pinned : workspace;
-            g[id] = g[id] || [];
-            g[id].push(c);
-        }
-    }
-    const ls: Labels = { workspace: {}, pinned: {} };
-    for (const [k, v] of Object.entries(workspace)) {
-        ls.workspace[k] = group(ctx, v);
-    }
-    for (const [k, v] of Object.entries(pinned)) {
-        ls.pinned[k] = group(ctx, v);
-    }
-    return ls;
-}
-
-function group(ctx: Context, cs: Hyprland.Client[]) {
-    return join(...cs.map(c => join(bind(c, 'x'), bind(c, 'y'), Client.icon(ctx, c)))).as(
-        (...rs) =>
-            rs
-                .sort(([ax, ay], [bx, by]) => ax - bx || ay - by)
-                .map(([, , i]) => i)
-                .join(' '),
-    );
-}
-
-const LABELS = Context(ctx => {
+function clients(cb: (c: Hyprland.Client) => boolean) {
     const hyprland = Hyprland.get_default();
-    return Variable(label(ctx, hyprland)).observe(
-        [
-            [hyprland, 'client-added'],
-            [hyprland, 'client-removed'],
-            [hyprland, 'client-moved'],
-            [hyprland, 'floating'],
-        ],
-        () => label(ctx, hyprland),
+
+    const map = Object.fromEntries(hyprland.clients.filter(cb).map(c => [c.address, c]));
+    let set = Object.values(map);
+
+    const add = (c: Hyprland.Client) =>
+        c.address in map ? set : ((map[c.address] = c), (set = Object.values(map)));
+    const del = (address: string) =>
+        address in map ? (delete map[address], (set = Object.values(map))) : set;
+    const mov = (c: Hyprland.Client) => (cb(c) ? add(c) : del(c.address));
+
+    return reduce(
+        observe(set, hyprland, {
+            'client-added': mov,
+            'client-removed': del,
+            'client-moved': mov,
+            floating: mov,
+        })(cs => compute(cs.map(Icon.client))(i => i.sort().join(' '))),
     );
-});
+}
 
-const SUBMAP = Context(() =>
-    Variable('').observe(Hyprland.get_default(), 'submap', (_, s) => s),
-);
+const SUBMAP = Static(() => observe('', Hyprland.get_default(), { submap: s => s }));
 
-export default ({ ctx, monitor }: Props) => {
+export default () => {
     const hyprland = Hyprland.get_default();
     const f = bind(hyprland, 'focused_workspace');
+    const is = Monitor.is();
 
-    const lazy = new Lazy(
-        w => [
-            w.id,
-            <button
-                className={f.as(f => (f === w ? 'target' : 'unfocused target'))}
-                label={bind(reduce(LABELS(ctx)(l => l.workspace[w.id] || '')))}
-                visible={bind(w, 'monitor').as(m => m === monitor)}
-                onClicked={() => hyprland.dispatch('workspace', String(w.id))}
-            />,
-        ],
-        hyprland.workspaces.filter(w => w.id > 0),
+    const workspace = (w: Hyprland.Workspace) => (
+        <label
+            class={f(f => (f === w ? 'target' : 'unfocused target'))}
+            label={clients(c => c.workspace === w && !c.floating)}
+            visible={bind(w, 'monitor')(is)}>
+            <Event.Click $left={() => hyprland.dispatch('workspace', String(w.id))} />
+        </label>
     );
-    const conn = [
-        hyprland.connect('workspace-added', (_, w) => w.id > 0 && lazy.add(w)),
-        hyprland.connect('workspace-removed', (_, id) => lazy.del(id)),
-    ];
 
+    const ws = bind(hyprland, 'workspaces');
+    const cs = clients(c => is(c.monitor) && c.floating);
     return (
-        <box className="workspaces" onDestroy={() => conn.map(id => hyprland.disconnect(id))}>
-            <box noImplicitDestroy={true}>{lazy()}</box>
-            <box className="dim status">
+        <box class="workspaces">
+            <box>
+                <For each={ws(ws => ws.filter(w => w.id > 0).sort((a, b) => a.id - b.id))}>
+                    {workspace}
+                </For>
+            </box>
+            <box class="dim status">
+                <label label={cs} visible={cs(cs => !!cs)} />
                 <label
-                    label={bind(reduce(LABELS(ctx)(l => l.pinned[monitor.name] || '')))}
-                    visible={LABELS(ctx)(l => !!l.pinned[monitor.name])}
-                />
-                <label
-                    className={SUBMAP(ctx)(s => (s ? '' : 'hidden'))}
-                    label={SUBMAP(ctx)(s => s || SPACE)}
+                    class={SUBMAP()(s => (s ? '' : 'hidden'))}
+                    label={SUBMAP()(s => s || Icon.SPACE)}
                 />
             </box>
         </box>

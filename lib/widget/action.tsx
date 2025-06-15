@@ -1,42 +1,40 @@
-import { Binding, Variable } from 'astal';
-import { Widget } from 'astal/gtk3';
+import { Accessor } from 'ags';
+import { Gtk } from 'ags/gtk4';
 
-import { join } from '../sub';
+import { compute, state } from '../sub';
+import { Props } from '../util';
 
-export interface Props extends Omit<Widget.BoxProps, 'children' | 'vertical'> {
-    actions: [string | Binding<string>, () => unknown, Binding<boolean>?][];
+export namespace Action {
+    export type Props = Props.Box & {
+        actions?: [string | Accessor<string>, () => unknown, Accessor<boolean>?][];
+    };
 }
-export default ({ actions, child, className, ...rest }: Props) => {
-    className = className ? `action ${className}` : 'action';
-
+export const Action = ({ actions = [], ...rest }: Action.Props) => {
     if (actions.length === 0) {
-        return (
-            <box {...rest} className={className}>
-                {child}
-            </box>
-        );
+        return <box {...rest} class="action" />;
     }
 
-    const hovered = Variable(false);
-    const visible = join(
-        ...actions
-            .map(([, , v]) => v)
-            .filter(v => !!v)
-            .concat(hovered()),
-    ).as((...v) => v.pop() && (v.some(v => v) || v.length === 0));
+    const [hovered, hovered_] = state(false);
+    const visible = actions.some(([, , v]) => !v)
+        ? hovered
+        : compute(actions.map(([, , v]) => v!).concat(hovered))(
+              v => v.pop()! && v.some(v => v),
+          );
 
     return (
-        <eventbox onHover={() => hovered.set(true)} onHoverLost={() => hovered.set(false)}>
-            <box {...rest} className={className} vertical>
-                {child}
-                <revealer revealChild={visible} transitionType={SLIDE_DOWN}>
-                    <box className="actions">
-                        {actions.map(([l, c, v]) => (
-                            <button label={l} onClicked={c} visible={v ?? true} hexpand />
-                        ))}
-                    </box>
-                </revealer>
-            </box>
-        </eventbox>
+        <box class="action" orientation={Orientation.VERTICAL}>
+            <Gtk.EventControllerMotion
+                $enter={() => hovered_(true)}
+                $leave={() => hovered_(false)}
+            />
+            <box {...rest} />
+            <revealer revealChild={visible} transitionType={Transition.SLIDE_DOWN}>
+                <box class="actions" homogeneous>
+                    {actions.map(([l, c, v]) => (
+                        <button label={l} $clicked={c} visible={v ?? true} />
+                    ))}
+                </box>
+            </revealer>
+        </box>
     );
 };

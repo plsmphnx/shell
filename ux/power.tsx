@@ -1,9 +1,9 @@
-import { bind } from 'astal';
+import { execAsync } from 'ags/process';
+
 import Battery from 'gi://AstalBattery';
 
-import { select } from '../lib/icons';
-import { join } from '../lib/sub';
-import { Context, Props } from '../lib/util';
+import { watch } from '../lib/sub';
+import { Icon, Static } from '../lib/util';
 import { Toggle } from '../lib/widget';
 
 const { CHARGING, DISCHARGING, EMPTY, UNKNOWN } = Battery.State;
@@ -19,7 +19,7 @@ const ICONS = {
         Sleep: '\u{f0904}',
         Lock: '\u{f033e}',
     },
-    Draining: select(
+    Draining: Icon.select(
         '\u{f008e}',
         '\u{f007a}',
         '\u{f007b}',
@@ -32,7 +32,7 @@ const ICONS = {
         '\u{f0082}',
         '\u{f0079}',
     ),
-    Charging: select(
+    Charging: Icon.select(
         '\u{f089f}',
         '\u{f089c}',
         '\u{f0086}',
@@ -50,68 +50,60 @@ const ICONS = {
 const COMMANDS = {
     Shutdown: 'systemctl poweroff',
     Restart: 'systemctl reboot',
-    Logout: 'loginctl lock-session && hyprctl dispatch exit',
-    Sleep: 'systemctl suspend-then-hibernate',
+    Logout: 'hyprctl dispatch exit',
+    Sleep: 'systemctl sleep',
     Lock: 'loginctl lock-session',
 };
+
+function state({ device_type, state }: Battery.Device) {
+    return device_type === BATTERY ? state : UNKNOWN;
+}
 
 function time(s: number) {
     return new Date(s * 1000).toISOString().substring(14, 19);
 }
 
-const CTX = Context(() => {
-    const battery = Battery.get_default();
+const ICON_PROPS = ['device_type', 'state', 'percentage'] as const;
+const ICON = Static(() =>
+    watch(Battery.get_default(), ICON_PROPS, bat => {
+        switch (state(bat)) {
+            case CHARGING:
+                return ICONS.Charging(bat.percentage);
+            case DISCHARGING:
+                return ICONS.Draining(bat.percentage);
+            case EMPTY:
+                return ICONS.Alert;
+            default:
+                return ICONS.Icon;
+        }
+    }),
+);
 
-    const type = bind(battery, 'device_type');
-    const state = bind(battery, 'state');
-    const percent = bind(battery, 'percentage');
-    const empty = bind(battery, 'time_to_empty');
-    const full = bind(battery, 'time_to_full');
+const TOOL_PROPS = [...ICON_PROPS, 'time_to_empty', 'time_to_full'] as const;
+const TOOL = Static(() =>
+    watch(Battery.get_default(), TOOL_PROPS, bat => {
+        const p = Math.floor(bat.percentage * 100);
+        switch (state(bat)) {
+            case CHARGING:
+                return `${p}% (${time(bat.time_to_full)})`;
+            case DISCHARGING:
+                return `${p}% (${time(bat.time_to_empty)})`;
+            case EMPTY:
+                return '0%';
+            default:
+                return '100%';
+        }
+    }),
+);
 
-    return {
-        icon: join(type, state, percent).as((t, s, p) => {
-            switch (t === BATTERY ? s : UNKNOWN) {
-                case CHARGING:
-                    return ICONS.Charging(p);
-                case DISCHARGING:
-                    return ICONS.Draining(p);
-                case EMPTY:
-                    return ICONS.Alert;
-                default:
-                    return ICONS.Icon;
-            }
-        }),
-
-        tooltip: join(type, state, percent, empty, full).as((t, s, p, e, f) => {
-            p = Math.floor(p * 100);
-            switch (t === BATTERY ? s : UNKNOWN) {
-                case CHARGING:
-                    return `${p}% (${time(f)})`;
-                case DISCHARGING:
-                    return `${p}% (${time(e)})`;
-                case EMPTY:
-                    return '0%';
-                default:
-                    return '100%';
-            }
-        }),
-    };
-});
-
-export default ({ ctx, monitor }: Props) => (
-    <Toggle
-        id="power"
-        className="status"
-        ctx={ctx}
-        monitor={monitor}
-        label={CTX(ctx).icon}
-        tooltipText={CTX(ctx).tooltip}>
-        <box className="menu" vertical>
+export default () => (
+    <Toggle id="power" label={ICON()} tooltipText={TOOL()}>
+        <box class="menu" orientation={Orientation.VERTICAL}>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
                 <button
                     label={(ICONS.Commands as any)[name]}
-                    css="font-size: 150%"
-                    onClicked={cmd}
+                    css="font-size:150%;"
+                    $clicked={() => execAsync(cmd)}
                 />
             ))}
         </box>

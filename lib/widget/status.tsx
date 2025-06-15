@@ -1,19 +1,28 @@
-import { Binding } from 'astal';
-import { Astal, Widget } from 'astal/gtk3';
+import { Accessor } from 'ags';
+import { Gtk } from 'ags/gtk4';
 
-import { Event } from '../util';
+import { Event, Props } from '../util';
 
-export interface Props extends Omit<Widget.ButtonProps, 'child'> {
-    reveal?: Binding<boolean>;
-    onPrimary?: ((obj: Widget.Button, evt: Astal.ClickEvent) => unknown) | string;
-    onSecondary?: ((obj: Widget.Button, evt: Astal.ClickEvent) => unknown) | string;
+export namespace Status {
+    export type Props = Props.Label & {
+        $primary?: (evt: Gtk.GestureClick) => unknown;
+        $secondary?: (evt: Gtk.GestureClick) => unknown;
+    };
 }
-
-export default ({ reveal, onPrimary, onSecondary, ...rest }: Props) =>
-    reveal ? (
-        <revealer revealChild={reveal} transitionType={SLIDE_LEFT} transitionDuration={500}>
-            <button {...rest} {...Event.click(onPrimary, onSecondary)} />
+export const Status = ({ visible, $primary, $secondary, ...rest }: Status.Props) => {
+    const inner = (
+        <label {...rest}>
+            <Event.Click $left={$primary} $right={$secondary} />
+        </label>
+    );
+    return visible instanceof Accessor ? (
+        <revealer
+            revealChild={visible}
+            transitionType={Transition.SLIDE_LEFT}
+            transitionDuration={500}>
+            {inner}
         </revealer>
     ) : (
-        <button {...rest} {...Event.click(onPrimary, onSecondary)} />
+        inner
     );
+};

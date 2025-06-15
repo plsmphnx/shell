@@ -1,103 +1,67 @@
-import { timeout, Variable } from 'astal';
+import { Accessor, For, Setter } from 'ags';
+
 import Notifd from 'gi://AstalNotifd';
 
-import { Event, Props } from '../lib/util';
-import { Action, Dropdown, Image, Lazy, Markup, Toggle } from '../lib/widget';
+import { after, bind, compute, state } from '../lib/sub';
+import { Event } from '../lib/util';
+import { Action, Icon, Text, Toggle } from '../lib/widget';
 
 const ICONS = {
     Icon: '\u{f035c}',
 };
 
-const icon = (n: Notifd.Notification) => {
-    if (n.image) {
-        return <Image className="icon" image={n.image} valign={START} />;
-    }
+const notify = (n: Notifd.Notification, open: Accessor<boolean>, count_: Setter<number>) => {
+    count_(c => c + 1);
+    const reveal = compute([after(5000, () => count_(c => c - 1)), open], (u, o) => u || o);
 
-    if (n.desktop_entry || n.app_icon) {
-        return <icon className="icon" icon={n.desktop_entry || n.app_icon} valign={START} />;
-    }
-
-    return undefined;
-};
-
-const popup = (n: Notifd.Notification) => {
     const defaultAction = n.actions.find(({ id }) => id === 'default');
     const customActions = n.actions.filter(({ id }) => id !== 'default');
-    return [
-        n.id,
-        <Action actions={customActions.map(({ id, label }) => [label, () => n.invoke(id)])}>
-            <eventbox
-                {...Event.click(
-                    () => defaultAction && n.invoke(defaultAction.id),
-                    () => n.dismiss(),
-                )}>
-                <box>
-                    {icon(n)}
-                    <box vertical hexpand vexpand>
-                        <Markup className="title" label={n.summary} xalign={0} truncate />
-                        <Markup label={n.body} xalign={0} wrap />
-                    </box>
-                </box>
-            </eventbox>
-        </Action>,
-    ] as const;
+    return (
+        <revealer
+            revealChild={reveal}
+            transitionType={Transition.SLIDE_DOWN}
+            transitionDuration={500}>
+            <Action actions={customActions.map(({ id, label }) => [label, () => n.invoke(id)])}>
+                <Event.Click
+                    $left={() => defaultAction && n.invoke(defaultAction.id)}
+                    $right={() => n.dismiss()}
+                />
+                <Icon
+                    from={n}
+                    icon={[{ file: 'image' }, { icon: 'desktop_entry' }, { icon: 'app_icon' }]}
+                    valign={Align.START}
+                />
+                <Text.Box orientation={Orientation.VERTICAL}>
+                    <Text class="title" label={n.summary} />
+                    <Text label={n.body} wrap />
+                </Text.Box>
+            </Action>
+        </revealer>
+    );
 };
 
-export default ({ ctx, monitor }: Props) => {
+export default () => {
     const notifd = Notifd.get_default();
+    const notifications = bind(notifd, 'notifications');
 
-    const all = new Lazy(popup, notifd.notifications);
+    const [open, open_] = state(false);
+    const [count, count_] = state(0);
 
-    const popups = new Lazy(popup);
-    const active = Variable(false);
-    const hide = (id: number) => {
-        popups.del(id);
-        if (popups.get().length === 0) {
-            active.set(false);
-        }
-    };
-    const show = (n: Notifd.Notification) => {
-        popups.add(n);
-        active.set(true);
-        timeout(5000, () => hide(n.id));
-    };
-
-    const conn = [
-        notifd.connect('notified', (_, id) => {
-            const n = notifd.get_notification(id);
-            all.add(n);
-            show(n);
-        }),
-        notifd.connect('resolved', (_, id) => {
-            all.del(id);
-            hide(id);
-        }),
-    ];
-
-    const drop = (
-        <Dropdown monitor={monitor} reveal={active()}>
-            <box vertical noImplicitDestroy={true}>
-                {popups()}
-            </box>
-        </Dropdown>
-    );
-
-    const bound = all();
     return (
         <Toggle
             id="notifications"
-            ctx={ctx}
-            monitor={monitor}
             label={ICONS.Icon}
-            reveal={bound.as(n => n.length > 0)}
-            onReveal={() => active.set(false)}
-            onSecondary={() => {
+            visible={notifications(n => n.length > 0)}
+            drop={count(n => n > 0)}
+            $open={(_, o) => open_(o)}
+            $secondary={() => {
                 for (const n of notifd.notifications) {
                     n.dismiss();
                 }
-            }}
-            onDestroy={() => (conn.map(id => notifd.disconnect(id)), drop.destroy())}>
-            <box vertical>{bound}</box>
+            }}>
+            <box orientation={Orientation.VERTICAL}>
+                <For each={notifications}>{n => notify(n, open, count_)}</For>
+            </box>
         </Toggle>
     );
 };

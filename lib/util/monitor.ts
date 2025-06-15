@@ -1,22 +1,22 @@
-import { Gdk } from 'astal/gtk3';
+import { Accessor, createContext } from 'ags';
+import { Gdk } from 'ags/gtk4';
+
 import Hyprland from 'gi://AstalHyprland';
 
-export interface Props {
-    monitor: Hyprland.Monitor;
+export interface Current {
+    gdk: Gdk.Monitor;
 }
 
-export function gdk(monitor?: Hyprland.Monitor) {
-    if (!monitor) {
-        return {};
-    }
+export const Context = createContext<Current | undefined>(undefined);
 
-    const display = Gdk.Display.get_default()!;
-    const screen = Gdk.Screen.get_default()!;
+export function window() {
+    return { namespace: 'shell', gdkmonitor: Context.use()?.gdk };
+}
 
-    for (let i = 0; i < display.get_n_monitors(); i++) {
-        if (screen.get_monitor_plug_name(i) === monitor.name) {
-            return { gdkmonitor: display.get_monitor(i)! };
-        }
-    }
-    return {};
+export function is(acc: Accessor<Hyprland.Monitor>): Accessor<boolean>;
+export function is(): (mon?: Hyprland.Monitor) => boolean;
+export function is(acc?: Accessor<Hyprland.Monitor>) {
+    const current = Context.use()?.gdk;
+    const is = (monitor?: Hyprland.Monitor) => current?.connector === monitor?.name;
+    return acc ? acc(is) : is;
 }

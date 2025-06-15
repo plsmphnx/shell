@@ -1,10 +1,10 @@
-import { bind } from 'astal';
-import { Astal, Widget } from 'astal/gtk3';
+import { For } from 'ags';
+
 import Mpris from 'gi://AstalMpris';
 
-import { join, reduce } from '../lib/sub';
-import { Context, Props } from '../lib/util';
-import { Action, Image, Toggle } from '../lib/widget';
+import { bind, compute, reduce } from '../lib/sub';
+import { Static } from '../lib/util';
+import { Action, Icon, Text, Toggle } from '../lib/widget';
 
 const { PLAYING } = Mpris.PlaybackStatus;
 
@@ -17,94 +17,87 @@ const ICONS = {
     Paused: '\u{f075b}',
 };
 
-const FALLBACK_ICON = 'audio-x-generic-symbolic';
-
 function length(s: number) {
     const min = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
     return `${min}:${`0${sec}`.slice(-2)}`;
 }
 
-const CTX = Context(() => {
+const ICON = Static(() => {
     const players = bind(Mpris.get_default(), 'players');
-
-    const icon = bind(
-        reduce(
-            players.as(ps =>
-                join(...ps.map(p => bind(p, 'playback_status'))).as((...ss) =>
-                    ss.every(s => s !== PLAYING),
-                ),
+    return reduce(
+        players(ps =>
+            compute(ps.map(p => bind(p, 'playback_status')))(ss =>
+                ss.every(s => s !== PLAYING) ? ICONS.Paused : ICONS.Icon,
             ),
         ),
-    ).as(p => (p ? ICONS.Paused : ICONS.Icon));
-
-    return { players, icon };
+    );
 });
-
-const Text = (props: Widget.LabelProps) => <label {...props} hexpand wrap xalign={0} />;
 
 const player = (p: Mpris.Player) => {
     const pos = bind(p, 'position');
     const len = bind(p, 'length');
+    const val = compute([pos, len], (p, l) => (l > 0 ? p / l : 0));
     return (
         <Action
             actions={[
                 [ICONS.Prev, () => p.previous(), bind(p, 'can_go_previous')],
                 [
-                    bind(p, 'playback_status').as(s =>
-                        s === PLAYING ? ICONS.Pause : ICONS.Play,
-                    ),
+                    bind(p, 'playback_status')(s => (s === PLAYING ? ICONS.Pause : ICONS.Play)),
                     () => p.play_pause(),
                     bind(p, 'can_play'),
                 ],
                 [ICONS.Next, () => p.next(), bind(p, 'can_go_next')],
             ]}>
-            <box>
-                <Image className="icon" valign={START} image={bind(p, 'cover_art')} />
-                <box vertical>
-                    <box>
-                        <Text className="title" label={bind(p, 'title')} />
-                        <icon
-                            icon={bind(p, 'entry').as(e =>
-                                Astal.Icon.lookup_icon(e) ? e : FALLBACK_ICON,
-                            )}
-                            tooltipText={bind(p, 'identity')}
-                            valign={START}
-                        />
-                    </box>
-                    <Text className="subtitle" label={bind(p, 'artist')} />
-                    <box visible={len.as(l => l > 0)}>
-                        <label label={pos.as(length)} />
-                        <slider
-                            hexpand
-                            onDragged={({ value }) => (p.position = value * p.length)}
-                            value={join(pos, len).as((p, l) => (l > 0 ? p / l : 0))}
-                        />
-                        <label label={len.as(length)} />
-                    </box>
+            <Icon
+                from={p}
+                icon={[{ file: 'cover_art' }, { url: 'art_url' }]}
+                valign={Align.START}
+            />
+            <Text.Box orientation={Orientation.VERTICAL}>
+                <box>
+                    <Text class="title" label={bind(p, 'title')(t => t || '')} hexpand wrap />
+                    <image
+                        iconName={bind(p, 'entry')}
+                        tooltipText={bind(p, 'identity')}
+                        valign={Align.START}
+                    />
                 </box>
-            </box>
+                <Text class="subtitle" label={bind(p, 'artist')(a => a || '')} wrap />
+                <box visible={len(l => l > 0)}>
+                    <label label={pos(length)} />
+                    <slider
+                        hexpand
+                        $changeValue={({ value }) => (p.position = value * p.length)}
+                        value={val}
+                    />
+                    <label label={len(length)} />
+                </box>
+            </Text.Box>
         </Action>
     );
 };
 
-export default ({ ctx, monitor }: Props) => (
-    <Toggle
-        id="mpris"
-        ctx={ctx}
-        monitor={monitor}
-        label={CTX(ctx).icon}
-        reveal={CTX(ctx).players.as(p => p.length > 0)}
-        onSecondary={() => {
-            const ps = CTX(ctx).players.get();
-            const playing = ps.filter(p => p.playback_status === PLAYING);
-            for (const p of playing) {
-                p.pause();
-            }
-            if (playing.length === 0 && ps.length === 1) {
-                ps[0].play();
-            }
-        }}>
-        <box vertical>{CTX(ctx).players.as(p => p.map(player))}</box>
-    </Toggle>
-);
+export default () => {
+    const mpris = Mpris.get_default();
+    const players = bind(mpris, 'players');
+    return (
+        <Toggle
+            id="mpris"
+            label={ICON()}
+            visible={players(p => p.length > 0)}
+            $secondary={() => {
+                const playing = mpris.players.filter(p => p.playback_status === PLAYING);
+                for (const p of playing) {
+                    p.pause();
+                }
+                if (playing.length === 0 && mpris.players.length === 1) {
+                    mpris.players[0].play();
+                }
+            }}>
+            <box orientation={Orientation.VERTICAL}>
+                <For each={players}>{player}</For>
+            </box>
+        </Toggle>
+    );
+};
