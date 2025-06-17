@@ -5,3 +5,4 @@ export { Popup } from './popup';
 export { Status } from './status';
 export { Text } from './text';
 export { Toggle } from './toggle';
+export { Window } from './window';

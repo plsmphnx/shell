@@ -1,22 +1,21 @@
-import { onCleanup } from 'ags';
 import { Astal } from 'ags/gtk4';
 
-import { Event, Monitor, Props } from '../util';
+import { Event, Props } from '../util';
 
+import { Window } from './window';
 import { Workaround } from './workaround';
 
 export namespace Closer {
     export type Props = Pick<Props.Window, 'visible' | '$close'>;
 }
 export const Closer = ({ visible, $close }: Closer.Props) => (
-    <window
-        {...Monitor.window()}
+    <Window
         anchor={Anchor.TOP | Anchor.RIGHT | Anchor.LEFT | Anchor.BOTTOM}
         layer={Layer.TOP}
         keymode={Keymode.NONE}
-        visible={visible}
-        $={self => onCleanup(() => self.run_dispose())}>
+        visible={visible}>
         <Event.Click $any={evt => $close(evt.widget as Astal.Window)} />
         <Workaround />
-    </window>
+    </Window>
 );
+export type Closer = Window;

@@ -173,7 +173,7 @@ tooltip {
     }
 }
 
-trough {
+scale trough {
     border-radius: 0.5em;
     border: $border solid $shd;
 }
@@ -181,7 +181,6 @@ scale.horizontal trough {
     padding: 0 0.5em;
     margin: 0 $margin;
 }
-
 slider {
     border-radius: 0.5em;
     background-color: $dim;
@@ -204,4 +203,11 @@ calendar {
     .other-month {
         color: $shd;
     }
+}
+
+header,
+separator.horizontal {
+    border-bottom: $border solid $shd;
+    padding-bottom: 0.5 * $margin;
+    margin-bottom: 0.5 * $margin;
 }

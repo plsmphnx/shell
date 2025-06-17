@@ -1,22 +1,18 @@
-import { createRoot, For } from 'ags';
-import { Gdk } from 'ags/gtk4';
+import { For } from 'ags';
 import App from 'ags/gtk4/app';
 
 import './globals';
 
 import { bind } from './lib/sub';
-import { Config, Monitor } from './lib/util';
+import { Config } from './lib/util';
 
-import Bar from './ux/bar';
-import Launcher from './ux/launcher';
+import Monitor from './ux/monitor';
+import * as Launcher from './ux/launcher';
 
 App.start({
     main() {
         Config.reload();
-        For({
-            each: bind(App, 'monitors'),
-            children: (gdk: Gdk.Monitor) => Monitor.Context({ value: { gdk }, children: Bar }),
-        });
+        For({ each: bind(App, 'monitors'), children: Monitor });
     },
 
     client(msg: (msg: string) => string, ...args: string[]) {
@@ -26,7 +22,7 @@ App.start({
     requestHandler(req, ret) {
         switch (req) {
             case 'launch':
-                createRoot(Launcher);
+                Launcher.open();
                 break;
             case 'reload':
                 Config.reload();

@@ -9,10 +9,6 @@ export interface Current {
 
 export const Context = createContext<Current | undefined>(undefined);
 
-export function window() {
-    return { namespace: 'shell', gdkmonitor: Context.use()?.gdk };
-}
-
 export function is(acc: Accessor<Hyprland.Monitor>): Accessor<boolean>;
 export function is(): (mon?: Hyprland.Monitor) => boolean;
 export function is(acc?: Accessor<Hyprland.Monitor>) {

@@ -1,9 +1,12 @@
-import { onCleanup } from 'ags';
-import { Astal, Gtk } from 'ags/gtk4';
+import { Accessor } from 'ags';
+import { Gtk } from 'ags/gtk4';
 
-import { lazy, listen } from '../sub';
-import { Monitor, Props } from '../util';
+import Hyprland from 'gi://AstalHyprland';
 
+import { bind, compute, lazy, listen } from '../sub';
+import { Props, Monitor } from '../util';
+
+import { Window } from './window';
 import { Workaround } from './workaround';
 
 export namespace Popup {
@@ -18,19 +21,22 @@ export const Popup = ({
     children,
     ...rest
 }: Popup.Props) => {
-    let win: Astal.Window;
+    let win: Window;
     let rev: Gtk.Revealer;
+    const focused = Monitor.is(bind(Hyprland.get_default(), 'focused_monitor'));
+    const reveal =
+        visible instanceof Accessor
+            ? compute([visible, focused], (v, f) => v && f)
+            : visible && focused;
     return (
-        <window
-            {...Monitor.window()}
+        <Window
             layer={Layer.OVERLAY}
             $={self => {
                 win = self;
-                listen(lazy(visible) ?? false, v => {
-                    rev.reveal_child = rev.child_revealed && v;
-                    win.visible = win.visible || v;
+                listen(lazy(reveal) ?? false, r => {
+                    rev.reveal_child = rev.child_revealed && r;
+                    win.visible = win.visible || r;
                 });
-                onCleanup(() => self.run_dispose());
             }}
             $$visible={self => ((rev.reveal_child = self.visible), $$visible?.(self))}
             {...rest}>
@@ -43,6 +49,7 @@ export const Popup = ({
                     {children}
                 </revealer>
             </Workaround>
-        </window>
+        </Window>
     );
 };
+export type Popup = Window;

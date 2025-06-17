@@ -1,4 +1,5 @@
 import * as GObject from 'ags/gobject';
+import { Gtk } from 'ags/gtk4';
 
 import { bind, compute } from '../sub';
 import { Props, Select } from '../util';
@@ -27,3 +28,4 @@ export const Icon = <T extends GObject.Object>({ from, icon, ...rest }: Icon.Pro
     });
     return <box {...rest} class={css(css => css && 'icon')} css={css} />;
 };
+export type Icon = Gtk.Box;

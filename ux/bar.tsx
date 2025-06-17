@@ -1,4 +1,5 @@
-import { Icon, Monitor } from '../lib/util';
+import { Icon } from '../lib/util';
+import { Window } from '../lib/widget';
 
 import { Speaker, Microphone } from './audio';
 import Bluetooth from './bluetooth';
@@ -12,8 +13,7 @@ import Tray from './tray';
 import Workspaces from './workspaces';
 
 export default () => (
-    <window
-        {...Monitor.window()}
+    <Window
         anchor={Anchor.TOP | Anchor.RIGHT | Anchor.LEFT}
         exclusivity={Exclusivity.EXCLUSIVE}
         visible>
@@ -41,5 +41,5 @@ export default () => (
                 </box>
             </box>
         </centerbox>
-    </window>
+    </Window>
 );

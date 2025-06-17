@@ -26,3 +26,4 @@ export const Status = ({ visible, $primary, $secondary, ...rest }: Status.Props)
         inner
     );
 };
+export type Status = Gtk.Widget;

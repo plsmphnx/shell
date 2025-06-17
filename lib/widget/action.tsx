@@ -38,3 +38,4 @@ export const Action = ({ actions = [], ...rest }: Action.Props) => {
         </box>
     );
 };
+export type Action = Gtk.Box;

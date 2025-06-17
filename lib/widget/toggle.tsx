@@ -1,9 +1,7 @@
 import { Accessor, State } from 'ags';
 
-import Hyprland from 'gi://AstalHyprland';
-
 import { bind, compute, listen, state } from '../sub';
-import { Monitor, Static } from '../util';
+import { Static } from '../util';
 
 import { Closer } from './closer';
 import { Popup } from './popup';
@@ -20,20 +18,15 @@ export namespace Toggle {
 export const Toggle = ({ id, visible, drop, children, $open, ...rest }: Toggle.Props) => {
     const map = OPEN();
     const [open, open_] = map[id] || (map[id] = state(false));
-
-    const focused = Monitor.is(bind(Hyprland.get_default(), 'focused_monitor'));
-    const show = drop
-        ? compute([open, drop, focused], (o, d, f) => (o || d) && f)
-        : compute([open, focused], (o, f) => o && f);
-
     const [watch, watch_] = state(open.get());
+    const show = drop ? compute([open, drop], (o, d) => o || d) : open;
 
     <Popup
         visible={show}
         transitionType={Transition.SLIDE_DOWN}
         transitionDuration={1000}
         anchor={Anchor.TOP | Anchor.RIGHT}
-        $={self => $open! && listen(bind(self, 'visible'), o => watch_(o))}>
+        $={self => $open! && listen(bind(self, 'visible'), v => v || watch_(v))}>
         {children}
     </Popup>;
 
@@ -54,3 +47,4 @@ export const Toggle = ({ id, visible, drop, children, $open, ...rest }: Toggle.P
         />
     );
 };
+export type Toggle = Status;
