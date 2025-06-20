@@ -1,62 +1,52 @@
-import { For } from 'ags';
+import { Accessor, For } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
 
-import { bind, compute, observe, reduce } from '../lib/sub';
-import { Event, Icon, Monitor, Static } from '../lib/util';
+import { bind, compute, connect, filter, reduce, watch } from '../lib/sub';
+import { Icon, Monitor, Static } from '../lib/util';
+import { Event } from '../lib/widget';
 
-function clients(cb: (c: Hyprland.Client) => boolean) {
-    const hyprland = Hyprland.get_default();
-
-    const map = Object.fromEntries(hyprland.clients.filter(cb).map(c => [c.address, c]));
-    let set = Object.values(map);
-
-    const add = (c: Hyprland.Client) =>
-        c.address in map ? set : ((map[c.address] = c), (set = Object.values(map)));
-    const del = (address: string) =>
-        address in map ? (delete map[address], (set = Object.values(map))) : set;
-    const mov = (c: Hyprland.Client) => (cb(c) ? add(c) : del(c.address));
-
+function clients<K extends Extract<keyof Hyprland.Client, string>>(
+    keys: readonly K[],
+    cb: (c: Pick<Hyprland.Client, K>) => boolean | Accessor<boolean>,
+) {
     return reduce(
-        observe(set, hyprland, {
-            'client-added': mov,
-            'client-removed': del,
-            'client-moved': mov,
-            floating: mov,
-        })(cs => compute(cs.map(Icon.client))(i => i.sort().join(' '))),
+        compute([bind(Hyprland.get_default(), 'clients'), Icon.client()], (cs, icon) =>
+            filter(cs, c => reduce(watch(c, keys, cb))).as(cs => cs.map(icon).sort().join(' ')),
+        ),
     );
 }
 
-const SUBMAP = Static(() => observe('', Hyprland.get_default(), { submap: s => s }));
+const SUBMAP = Static(() => connect('', [Hyprland.get_default(), 'submap', s => s]));
 
 export default () => {
     const hyprland = Hyprland.get_default();
     const f = bind(hyprland, 'focused_workspace');
-    const is = Monitor.is();
+    const { gdk } = Monitor.Context.use();
 
     const workspace = (w: Hyprland.Workspace) => (
         <label
-            class={f(f => (f === w ? 'target' : 'unfocused target'))}
-            label={clients(c => c.workspace === w && !c.floating)}
-            visible={bind(w, 'monitor')(is)}>
-            <Event.Click $left={() => hyprland.dispatch('workspace', String(w.id))} />
+            class={f.as(f => (f === w ? 'target' : 'unfocused target'))}
+            label={clients(['workspace', 'floating'], c => !c.floating && c.workspace === w)}
+            visible={Monitor.is(bind(w, 'monitor'), gdk)}>
+            <Event.Click onLeft={() => hyprland.dispatch('workspace', String(w.id))} />
         </label>
     );
 
     const ws = bind(hyprland, 'workspaces');
-    const cs = clients(c => is(c.monitor) && c.floating);
+    const cs = clients(['monitor', 'floating'], c => c.floating && Monitor.is(c.monitor, gdk));
     return (
         <box class="workspaces">
             <box>
-                <For each={ws(ws => ws.filter(w => w.id > 0).sort((a, b) => a.id - b.id))}>
+                <For each={ws.as(ws => ws.filter(w => w.id > 0).sort((a, b) => a.id - b.id))}>
                     {workspace}
                 </For>
             </box>
             <box class="dim status">
-                <label label={cs} visible={cs(cs => !!cs)} />
+                <label label={cs} visible={cs.as(cs => !!cs)} />
                 <label
-                    class={SUBMAP()(s => (s ? '' : 'hidden'))}
-                    label={SUBMAP()(s => s || Icon.SPACE)}
+                    class={SUBMAP().as(s => (s ? '' : 'hidden'))}
+                    label={SUBMAP().as(s => s || Icon.SPACE)}
                 />
             </box>
         </box>

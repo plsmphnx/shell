@@ -3,7 +3,7 @@ import { execAsync } from 'ags/process';
 import Battery from 'gi://AstalBattery';
 
 import { watch } from '../lib/sub';
-import { Icon, Static } from '../lib/util';
+import { Icon, Static, time } from '../lib/util';
 import { Toggle } from '../lib/widget';
 
 const { CHARGING, DISCHARGING, EMPTY, UNKNOWN } = Battery.State;
@@ -55,12 +55,8 @@ const COMMANDS = {
     Lock: 'loginctl lock-session',
 };
 
-function state({ device_type, state }: Battery.Device) {
+function state({ device_type, state }: Pick<Battery.Device, 'device_type' | 'state'>) {
     return device_type === BATTERY ? state : UNKNOWN;
-}
-
-function time(s: number) {
-    return new Date(s * 1000).toISOString().substring(14, 19);
 }
 
 const ICON_PROPS = ['device_type', 'state', 'percentage'] as const;
@@ -98,12 +94,11 @@ const TOOL = Static(() =>
 
 export default () => (
     <Toggle id="power" label={ICON()} tooltipText={TOOL()}>
-        <box class="menu" orientation={Orientation.VERTICAL}>
+        <box class="power menu" orientation={Orientation.VERTICAL}>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
                 <button
                     label={(ICONS.Commands as any)[name]}
-                    css="font-size:150%;"
-                    $clicked={() => execAsync(cmd)}
+                    onClicked={() => execAsync(cmd)}
                 />
             ))}
         </box>

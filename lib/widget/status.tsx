@@ -1,18 +1,20 @@
 import { Accessor } from 'ags';
 import { Gtk } from 'ags/gtk4';
 
-import { Event, Props } from '../util';
+import { Props } from '../util';
+
+import * as Event from './event';
 
 export namespace Status {
     export type Props = Props.Label & {
-        $primary?: (evt: Gtk.GestureClick) => unknown;
-        $secondary?: (evt: Gtk.GestureClick) => unknown;
+        onPrimary?: (evt: Gtk.GestureClick) => void;
+        onSecondary?: (evt: Gtk.GestureClick) => void;
     };
 }
-export const Status = ({ visible, $primary, $secondary, ...rest }: Status.Props) => {
+export const Status = ({ visible, onPrimary, onSecondary, ...rest }: Status.Props) => {
     const inner = (
         <label {...rest}>
-            <Event.Click $left={$primary} $right={$secondary} />
+            <Event.Click onLeft={onPrimary} onRight={onSecondary} />
         </label>
     );
     return visible instanceof Accessor ? (

@@ -1,8 +1,11 @@
+import { Accessor } from 'ags';
+import { Gtk } from 'ags/gtk4';
+
 import Wp from 'gi://AstalWp';
 
-import { bind, reduce, watch } from '../lib/sub';
+import { bind, lazy, listen, popup, reduce, watch } from '../lib/sub';
 import { Config, Icon, Select, Static } from '../lib/util';
-import { Status } from '../lib/widget';
+import { Popup, Status } from '../lib/widget';
 
 const ICONS = {
     Speaker: {
@@ -16,30 +19,50 @@ const ICONS = {
     },
 };
 
-function icon(
-    icons: { Off: string; On: (volume: number) => string },
-    device: keyof Select<Wp.Audio, Wp.Endpoint>,
-) {
-    const dev = bind(Wp.get_default()!.audio, device);
+function volume(device: keyof Select<Wp.Audio, Wp.Endpoint>) {
     return reduce(
-        dev(dev =>
-            watch(dev, ['mute', 'volume'], ({ mute, volume }) =>
-                mute || volume === 0 ? icons.Off : icons.On(volume),
-            ),
+        bind(Wp.get_default()!.audio, device).as(dev =>
+            watch(dev, ['mute', 'volume'], ({ mute, volume }) => (mute ? 0 : volume)),
         ),
     );
 }
 
-const SPEAKER = Static(() => icon(ICONS.Speaker, 'default_speaker'));
+const SPEAKER = Static(() => volume('default_speaker'));
 
-const MICROPHONE = Static(() => icon(ICONS.Microphone, 'default_microphone'));
+const MICROPHONE = Static(() => volume('default_microphone'));
 
-export const Speaker = () => <Status label={SPEAKER()} {...Config.utils('speaker')} />;
+type Props = Status.Props & {
+    name: string;
+    icons: { Off: string; On: (volume: number) => string };
+    volume: Accessor<number>;
+};
+const Audio = ({ name, icons, volume, ...rest }: Props) => {
+    const icon = volume.as(v => (v === 0 ? icons.Off : icons.On(v)));
+
+    const [pop, pop_] = popup();
+    listen(lazy(volume), () => pop_(5000));
+
+    <Popup
+        visible={pop}
+        transitionType={Transition.SLIDE_UP}
+        transitionDuration={1000}
+        anchor={Anchor.BOTTOM}>
+        <box class="volume">
+            <label label={icon} />
+            <Gtk.ProgressBar fraction={volume} hexpand valign={Align.CENTER} />
+        </box>
+    </Popup>;
+
+    return <Status label={icon} {...Config.utils(name)} {...rest} />;
+};
+
+export const Speaker = () => <Audio name="speaker" icons={ICONS.Speaker} volume={SPEAKER()} />;
 
 export const Microphone = () => (
-    <Status
-        label={MICROPHONE()}
-        {...Config.utils('microphone')}
-        visible={bind(Wp.get_default()!.audio, 'recorders')(r => r.length > 0)}
+    <Audio
+        name="microphone"
+        icons={ICONS.Microphone}
+        volume={MICROPHONE()}
+        visible={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
     />
 );

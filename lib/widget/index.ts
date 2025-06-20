@@ -1,5 +1,6 @@
 export { Action } from './action';
 export { Closer } from './closer';
+export * as Event from './event';
 export { Icon } from './icon';
 export { Popup } from './popup';
 export { Status } from './status';

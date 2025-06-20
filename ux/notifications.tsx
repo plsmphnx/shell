@@ -1,31 +1,33 @@
-import { Accessor, For, Setter } from 'ags';
+import { For } from 'ags';
 
 import Notifd from 'gi://AstalNotifd';
 
-import { after, bind, compute, state } from '../lib/sub';
-import { Event } from '../lib/util';
-import { Action, Icon, Text, Toggle } from '../lib/widget';
+import { bind, compute, popup, state } from '../lib/sub';
+import { Action, Event, Icon, Text, Toggle } from '../lib/widget';
 
 const ICONS = {
     Icon: '\u{f035c}',
 };
 
-const notify = (n: Notifd.Notification, open: Accessor<boolean>, count_: Setter<number>) => {
-    count_(c => c + 1);
-    const reveal = compute([after(5000, () => count_(c => c - 1)), open], (u, o) => u || o);
+const notify = (n: Notifd.Notification, pop_: (ms: number) => void) => {
+    const open = Toggle.open('notifications');
+    const [up, up_] = popup();
+    const [hover, hover_] = state(false);
 
     const defaultAction = n.actions.find(({ id }) => id === 'default');
     const customActions = n.actions.filter(({ id }) => id !== 'default');
     return (
         <revealer
-            revealChild={reveal}
+            revealChild={compute([open, up, hover], (o, u, h) => o || u || h)}
             transitionType={Transition.SLIDE_DOWN}
-            transitionDuration={500}>
+            transitionDuration={1000}
+            $={() => (pop_(5000), up_(5000))}>
             <Action actions={customActions.map(({ id, label }) => [label, () => n.invoke(id)])}>
                 <Event.Click
-                    $left={() => defaultAction && n.invoke(defaultAction.id)}
-                    $right={() => n.dismiss()}
+                    onLeft={() => defaultAction && n.invoke(defaultAction.id)}
+                    onRight={() => n.dismiss()}
                 />
+                <Event.Hover onHover={(_, h) => hover_(h)} />
                 <Icon
                     from={n}
                     icon={[{ file: 'image' }, { icon: 'desktop_entry' }, { icon: 'app_icon' }]}
@@ -44,23 +46,23 @@ export default () => {
     const notifd = Notifd.get_default();
     const notifications = bind(notifd, 'notifications');
 
-    const [open, open_] = state(false);
-    const [count, count_] = state(0);
+    const [pop, pop_] = popup();
+    const [hover, hover_] = state(false);
 
     return (
         <Toggle
             id="notifications"
             label={ICONS.Icon}
-            visible={notifications(n => n.length > 0)}
-            drop={count(n => n > 0)}
-            $open={(_, o) => open_(o)}
-            $secondary={() => {
+            visible={notifications.as(n => n.length > 0)}
+            drop={compute([pop, hover], (p, h) => p || h)}
+            onSecondary={() => {
                 for (const n of notifd.notifications) {
                     n.dismiss();
                 }
             }}>
             <box orientation={Orientation.VERTICAL}>
-                <For each={notifications}>{n => notify(n, open, count_)}</For>
+                <Event.Hover onHover={(_, h) => hover_(h)} />
+                <For each={notifications}>{n => notify(n, pop_)}</For>
             </box>
         </Toggle>
     );

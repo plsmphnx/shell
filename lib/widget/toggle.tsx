@@ -1,50 +1,38 @@
-import { Accessor, State } from 'ags';
+import { Accessor } from 'ags';
 
-import { bind, compute, listen, state } from '../sub';
-import { Static } from '../util';
+import { compute, listen } from '../sub';
 
 import { Closer } from './closer';
 import { Popup } from './popup';
 import { Status } from './status';
 
-const OPEN = Static(() => ({} as { [id: string]: State<boolean> }));
-
 export namespace Toggle {
-    export type Props = Omit<Status.Props, '$primary'> & {
+    export type Props = Omit<Status.Props, 'onPrimary'> & {
         id: string;
         drop?: Accessor<boolean>;
     };
 }
-export const Toggle = ({ id, visible, drop, children, $open, ...rest }: Toggle.Props) => {
-    const map = OPEN();
-    const [open, open_] = map[id] || (map[id] = state(false));
-    const [watch, watch_] = state(open.get());
-    const show = drop ? compute([open, drop], (o, d) => o || d) : open;
+export const Toggle = ({ id, visible, drop, children, ...rest }: Toggle.Props) => {
+    const [open, open_] = Closer.open(id);
+    listen(visible, v => v || open_(false));
 
     <Popup
-        visible={show}
+        visible={drop ? compute([open, drop], (o, d) => o || d) : open}
         transitionType={Transition.SLIDE_DOWN}
         transitionDuration={1000}
-        anchor={Anchor.TOP | Anchor.RIGHT}
-        $={self => $open! && listen(bind(self, 'visible'), v => v || watch_(v))}>
+        anchor={Anchor.TOP | Anchor.RIGHT}>
         {children}
     </Popup>;
 
-    <Closer visible={open} $close={() => open_(false)} />;
-
     return (
         <Status
-            $primary={() => open_(o => !o)}
+            onPrimary={() => open_(o => !o)}
             visible={visible}
-            $={self => {
-                listen(visible, v => v || open_(false));
-                if ($open!) {
-                    listen(watch, w => $open(self, w));
-                    listen(open, o => watch_(o || !drop?.get()));
-                }
-            }}
+            class={open.as(o => (o ? 'bright' : ''))}
             {...rest}
         />
     );
 };
 export type Toggle = Status;
+
+Toggle.open = (id: string) => Closer.open(id)[0];

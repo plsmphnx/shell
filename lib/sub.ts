@@ -2,22 +2,19 @@ import {
     Accessor,
     createBinding as bind,
     createComputed as compute,
+    createConnection as connect,
     createExternal as external,
     createState as state,
     onCleanup,
     Setter,
 } from 'ags';
 import * as GObject from 'ags/gobject';
-import { timeout } from 'ags/time';
+import { Time, timeout } from 'ags/time';
 
-export { bind, external, compute, state };
+export { bind, compute, connect, external, state };
 
-export function after(ms: number, cb: () => void) {
-    const [up, up_] = state<{ cb: () => void } | void>({ cb });
-    const down = () => up_(u => u?.cb());
-    const time = timeout(ms, down);
-    onCleanup(() => (time.cancel(), down()));
-    return up(u => !!u);
+export function filter<T>(ary: T[], fn: (v: T) => Accessor<boolean>) {
+    return compute(ary.map(fn), (...f) => ary.filter((_, i) => f[i]));
 }
 
 export function lazy<T>(val: T) {
@@ -26,7 +23,7 @@ export function lazy<T>(val: T) {
         : val;
 }
 
-export function listen<T>(val: Accessor<T> | T, cb: (v: T) => unknown) {
+export function listen<T>(val: Accessor<T> | T, cb: (v: T) => void) {
     if (val instanceof Accessor) {
         onCleanup(val.subscribe(() => cb(val.get())));
         cb(val.get());
@@ -35,17 +32,13 @@ export function listen<T>(val: Accessor<T> | T, cb: (v: T) => unknown) {
     }
 }
 
-export function observe<T, O extends GObject.Object>(
-    init: T,
-    obj: O,
-    signals: { [s: string]: (...args: any[]) => T },
-) {
-    return external(init, set => {
-        const dispose = Object.entries(signals).map(([signal, handle]) =>
-            obj.connect(signal, (_, ...args) => set(handle(...args))),
-        );
-        return () => dispose.forEach(n => obj.disconnect(n));
-    });
+export function popup() {
+    const [time, time_] = state<Time | undefined>(undefined);
+    onCleanup(() => time_(t => (t?.cancel(), undefined)));
+    return [
+        time.as(t => !!t),
+        (ms: number) => time_(t => (t?.cancel(), timeout(ms, () => time_(undefined)))),
+    ] as const;
 }
 
 export type Reduced<T> = T extends Accessor<infer I> ? Reduced<I> : T;
@@ -75,11 +68,11 @@ function notify(key: string) {
         .toLowerCase()}`;
 }
 
-export function watch<O extends GObject.Object, T>(
+export function watch<O extends GObject.Object, K extends Extract<keyof O, string>, T>(
     obj: O,
-    keys: readonly Extract<keyof O, string>[],
-    cb: (o: O) => T,
-) {
+    keys: readonly K[],
+    cb: (o: Pick<O, K>) => T,
+): Accessor<T> {
     const up = () => cb(obj);
-    return observe(up(), obj, Object.fromEntries(keys.map(k => [notify(k), up])));
+    return (connect as any)(up(), ...keys.map(k => [obj, notify(k), up]));
 }

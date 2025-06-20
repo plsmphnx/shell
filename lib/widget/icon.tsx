@@ -22,10 +22,13 @@ export namespace Icon {
 }
 export const Icon = <T extends GObject.Object>({ from, icon, ...rest }: Icon.Props<T>) => {
     const icons = icon.map(i => Object.entries(i)[0]);
-    const css = compute(icons.map(([, k]) => bind(from, k)))(ps => {
-        const i = ps.findIndex(p => p);
-        return i >= 0 ? `background-image:${IMAGE[icons[i][0]](ps[i] as string)};` : '';
-    });
-    return <box {...rest} class={css(css => css && 'icon')} css={css} />;
+    const css = compute(
+        icons.map(([, k]) => bind(from, k)),
+        (...ps) => {
+            const i = ps.findIndex(p => p);
+            return i >= 0 ? `background-image:${IMAGE[icons[i][0]](ps[i] as string)};` : '';
+        },
+    );
+    return <box {...rest} class={css.as(css => css && 'icon')} css={css} />;
 };
 export type Icon = Gtk.Box;

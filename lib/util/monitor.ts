@@ -3,16 +3,25 @@ import { Gdk } from 'ags/gtk4';
 
 import Hyprland from 'gi://AstalHyprland';
 
+import { bind, compute, reduce } from '../sub';
+
 export interface Current {
     gdk: Gdk.Monitor;
 }
 
-export const Context = createContext<Current | undefined>(undefined);
+export const Context = createContext<Current>(undefined!);
 
-export function is(acc: Accessor<Hyprland.Monitor>): Accessor<boolean>;
-export function is(): (mon?: Hyprland.Monitor) => boolean;
-export function is(acc?: Accessor<Hyprland.Monitor>) {
-    const current = Context.use()?.gdk;
-    const is = (monitor?: Hyprland.Monitor) => current?.connector === monitor?.name;
-    return acc ? acc(is) : is;
+export function is(
+    mon: Hyprland.Monitor | Accessor<Hyprland.Monitor>,
+    gdk = Context.use().gdk,
+) {
+    return compute(
+        [
+            bind(gdk, 'connector'),
+            mon instanceof Accessor
+                ? reduce(mon.as(m => m && bind(m, 'name')))
+                : bind(mon, 'name'),
+        ],
+        (c, n) => c === n,
+    );
 }

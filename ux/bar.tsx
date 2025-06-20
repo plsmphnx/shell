@@ -18,13 +18,13 @@ export default () => (
         exclusivity={Exclusivity.EXCLUSIVE}
         visible>
         <centerbox class="bar">
-            <box _type="start">
+            <box $type="start">
                 <Workspaces />
             </box>
-            <box _type="center">
+            <box $type="center">
                 <Title />
             </box>
-            <box _type="end">
+            <box $type="end">
                 <box class="status">
                     <label class="hidden" label={Icon.SPACE} />
                     <Notifications />

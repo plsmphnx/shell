@@ -7,18 +7,17 @@ import GLib from 'gi://GLib';
 import style from '../../style.scss';
 
 import * as Icon from './icon';
-import { Static } from './static';
 
-const UTILS = Static(() => ({} as { [id: string]: string[] | undefined }));
+const UTILS: { [id: string]: string[] | undefined } = {};
 
 export function utils(id: string) {
     return {
-        $primary: () => {
-            const util = UTILS()[id]?.[0];
+        onPrimary: () => {
+            const util = UTILS[id]?.[0];
             util && execAsync(util);
         },
-        $secondary: () => {
-            const util = UTILS()[id]?.[1];
+        onSecondary: () => {
+            const util = UTILS[id]?.[1];
             util && execAsync(util);
         },
     };
@@ -65,14 +64,13 @@ export function reload() {
 
     App.apply_css(css, true);
 
-    Icon.client.reload(key(cfg, 'icons').map(cls => [cls, val(cfg, 'icons', cls, '0f2d0')]));
+    Icon.reload(key(cfg, 'icons').map(cls => [cls, val(cfg, 'icons', cls, '0f2d0')]));
 
-    const utils = UTILS();
-    for (const id in utils) {
-        delete utils[id];
+    for (const id in UTILS) {
+        delete UTILS[id];
     }
     for (const id of key(cfg, 'utils')) {
-        utils[id] = lst(cfg, 'utils', id);
+        UTILS[id] = lst(cfg, 'utils', id);
     }
 }
 

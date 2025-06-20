@@ -16,11 +16,11 @@ export namespace Text {
 }
 export const Text = ({ label, wrap, ...rest }: Text.Props) => (
     <label
-        label={label}
+        label={label instanceof Accessor ? label.as(t => t || '') : label}
         wrap={wrap}
         xalign={0}
-        useMarkup={label instanceof Accessor ? label(markup) : markup(label)}
-        ellipsize={wrap instanceof Accessor ? wrap(truncate) : truncate(wrap)}
+        useMarkup={label instanceof Accessor ? label.as(markup) : markup(label)}
+        ellipsize={wrap instanceof Accessor ? wrap.as(truncate) : truncate(wrap)}
         {...rest}
     />
 );

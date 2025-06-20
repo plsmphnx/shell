@@ -3,7 +3,7 @@ import { For } from 'ags';
 import Mpris from 'gi://AstalMpris';
 
 import { bind, compute, reduce } from '../lib/sub';
-import { Static } from '../lib/util';
+import { Static, time } from '../lib/util';
 import { Action, Icon, Text, Toggle } from '../lib/widget';
 
 const { PLAYING } = Mpris.PlaybackStatus;
@@ -17,22 +17,16 @@ const ICONS = {
     Paused: '\u{f075b}',
 };
 
-function length(s: number) {
-    const min = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${min}:${`0${sec}`.slice(-2)}`;
-}
-
-const ICON = Static(() => {
-    const players = bind(Mpris.get_default(), 'players');
-    return reduce(
-        players(ps =>
-            compute(ps.map(p => bind(p, 'playback_status')))(ss =>
-                ss.every(s => s !== PLAYING) ? ICONS.Paused : ICONS.Icon,
+const ICON = Static(() =>
+    reduce(
+        bind(Mpris.get_default(), 'players').as(ps =>
+            compute(
+                ps.map(p => bind(p, 'playback_status')),
+                (...ss) => (ss.every(s => s !== PLAYING) ? ICONS.Paused : ICONS.Icon),
             ),
         ),
-    );
-});
+    ),
+);
 
 const player = (p: Mpris.Player) => {
     const pos = bind(p, 'position');
@@ -43,7 +37,9 @@ const player = (p: Mpris.Player) => {
             actions={[
                 [ICONS.Prev, () => p.previous(), bind(p, 'can_go_previous')],
                 [
-                    bind(p, 'playback_status')(s => (s === PLAYING ? ICONS.Pause : ICONS.Play)),
+                    bind(p, 'playback_status').as(s =>
+                        s === PLAYING ? ICONS.Pause : ICONS.Play,
+                    ),
                     () => p.play_pause(),
                     bind(p, 'can_play'),
                 ],
@@ -56,22 +52,24 @@ const player = (p: Mpris.Player) => {
             />
             <Text.Box orientation={Orientation.VERTICAL}>
                 <box>
-                    <Text class="title" label={bind(p, 'title')(t => t || '')} hexpand wrap />
+                    <Text class="title" label={bind(p, 'title')} hexpand wrap />
                     <image
                         iconName={bind(p, 'entry')}
                         tooltipText={bind(p, 'identity')}
                         valign={Align.START}
                     />
                 </box>
-                <Text class="subtitle" label={bind(p, 'artist')(a => a || '')} wrap />
-                <box visible={len(l => l > 0)}>
-                    <label label={pos(length)} />
+                <Text class="subtitle" label={bind(p, 'artist')} wrap />
+                <box visible={len.as(l => l > 0)}>
+                    <label label={pos.as(time)} />
                     <slider
                         hexpand
-                        $changeValue={({ value }) => (p.position = value * p.length)}
+                        onChangeValue={({ value }) => {
+                            p.position = value * p.length;
+                        }}
                         value={val}
                     />
-                    <label label={len(length)} />
+                    <label label={len.as(time)} />
                 </box>
             </Text.Box>
         </Action>
@@ -85,8 +83,8 @@ export default () => {
         <Toggle
             id="mpris"
             label={ICON()}
-            visible={players(p => p.length > 0)}
-            $secondary={() => {
+            visible={players.as(p => p.length > 0)}
+            onSecondary={() => {
                 const playing = mpris.players.filter(p => p.playback_status === PLAYING);
                 for (const p of playing) {
                     p.pause();

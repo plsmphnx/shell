@@ -17,7 +17,6 @@ export const Popup = ({
     visible,
     transitionType,
     transitionDuration,
-    $$visible,
     children,
     ...rest
 }: Popup.Props) => {
@@ -33,19 +32,21 @@ export const Popup = ({
             layer={Layer.OVERLAY}
             $={self => {
                 win = self;
-                listen(lazy(reveal) ?? false, r => {
+                listen(lazy(reveal ?? false), r => {
                     rev.reveal_child = rev.child_revealed && r;
                     win.visible = win.visible || r;
                 });
             }}
-            $$visible={self => ((rev.reveal_child = self.visible), $$visible?.(self))}
-            {...rest}>
+            defaultHeight={-1}
+            defaultWidth={-1}
+            {...rest}
+            onNotifyVisible={self => (rev.reveal_child = self.visible)}>
             <Workaround>
                 <revealer
                     transitionType={transitionType}
                     transitionDuration={transitionDuration}
                     $={self => (rev = self)}
-                    $$childRevealed={self => (win.visible = self.child_revealed)}>
+                    onNotifyChildRevealed={self => (win.visible = self.child_revealed)}>
                     {children}
                 </revealer>
             </Workaround>

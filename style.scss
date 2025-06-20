@@ -1,6 +1,7 @@
 $shd: #{'alpha(var(--fg), 0.2)'};
 $dim: #{'alpha(var(--fg), 0.4)'};
 $txt: #{'alpha(var(--fg), 0.8)'};
+$bgt: var(--fg);
 
 $bc: var(--bg);
 $bg: #{'alpha(var(--bg), 0.4)'};
@@ -89,6 +90,10 @@ window {
     color: $dim;
 }
 
+.bright {
+    color: $bgt;
+}
+
 .hidden {
     color: transparent;
 }
@@ -170,6 +175,30 @@ tooltip {
         &:not(:first-child) {
             margin-top: calc($margin / 2);
         }
+    }
+}
+
+.power button {
+    font-size: 150%;
+}
+
+.volume {
+    @include float;
+    min-width: 0.5 * $popup;
+    label {
+        font-size: 125%;
+        margin-right: $margin;
+    }
+    trough,
+    progress {
+        border-radius: calc(0.5 * $border);
+        min-height: $border;
+    }
+    trough {
+        background-color: $shd;
+    }
+    progress {
+        background-color: $txt;
     }
 }
 

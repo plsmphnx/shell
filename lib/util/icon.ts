@@ -1,8 +1,8 @@
+import { Accessor } from 'ags';
+
 import Hyprland from 'gi://AstalHyprland';
 
 import { state } from '../sub';
-
-import { Static } from './static';
 
 export const SPACE = '\u{f1050}';
 
@@ -13,16 +13,14 @@ export function select(...icons: string[]) {
     };
 }
 
-const CLIENT = Static(() => state<[string, string][]>([]));
+const [CLIENT, CLIENT_] = state<[string, string][]>([]);
 
-export function client(client: Hyprland.Client) {
-    return CLIENT()[0](
-        i => i.find(([cls]) => client.class.toLowerCase().includes(cls))?.[1] ?? '\u{0f2d0}',
+export function client(): Accessor<(client: Hyprland.Client) => string> {
+    return CLIENT.as(
+        i => c => i.find(([cls]) => c.class.toLowerCase().includes(cls))?.[1] ?? '\u{0f2d0}',
     );
 }
 
-export namespace client {
-    export function reload(icons: [string, string][]) {
-        CLIENT()[1](icons.map(([cls, hex]) => [cls, String.fromCodePoint(parseInt(hex, 16))]));
-    }
+export function reload(icons: [string, string][]) {
+    CLIENT_(icons.map(([cls, hex]) => [cls, String.fromCodePoint(parseInt(hex, 16))]));
 }

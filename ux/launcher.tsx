@@ -5,21 +5,21 @@ import Apps from 'gi://AstalApps';
 import Gio from 'gi://Gio';
 
 import { compute, listen, state } from '../lib/sub';
-import { Event, Props, Static } from '../lib/util';
-import { Closer, Icon, Text, Popup } from '../lib/widget';
+import { Props, Static } from '../lib/util';
+import { Closer, Event, Icon, Text, Popup } from '../lib/widget';
 
 const ICONS = {
     More: '\u{f0142}',
     Less: '\u{f0140}',
 };
 
-const OPEN = Static(() => state(false));
+const [TEXT, TEXT_] = state('');
 
-const TEXT = Static(() => state(''));
+const APPS = Static(() => new Apps.Apps({ min_score: 0.5 }));
 
-const APPS = Static(() => OPEN()[0](o => (o ? new Apps.Apps({ min_score: 0.5 }) : undefined)));
-
-const LIST = Static(() => compute([APPS(), TEXT()[0]], (a, t) => a?.exact_query(t) || []));
+const LIST = Static(() =>
+    compute([Closer.open('launcher')[0], TEXT], (o, t) => (o ? APPS().exact_query(t) : [])),
+);
 
 const OFFSET = Static(() => new Gtk.Adjustment());
 
@@ -27,13 +27,13 @@ const DROP = Symbol();
 
 const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
     const Enter = () => (
-        <Gtk.EventControllerMotion $enter={e => !entry.is_focus && e.widget.grab_focus()} />
+        <Event.Hover onHover={(e, h) => h && !entry.is_focus && e.widget.grab_focus()} />
     );
-    type Actions = { open: () => unknown; close: () => unknown; toggle: () => unknown };
+    type Actions = { open: () => void; close: () => void; toggle: () => void };
     const Primary = ({ actions, children }: Props.Button & { actions?: Actions }) => (
         <button>
-            <Event.Click $left={launch} $right={actions?.toggle} />
-            <Event.Key $return={launch} $right={actions?.open} $left={actions?.close} />
+            <Event.Click onLeft={launch} onRight={actions?.toggle} />
+            <Event.Key onReturn={launch} onRight={actions?.open} onLeft={actions?.close} />
             <Enter />
             <box>
                 <Icon from={app} icon={[{ icon: 'icon_name' }]} />
@@ -59,12 +59,12 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
         return (
             <box orientation={Orientation.VERTICAL}>
                 <Primary $={self => (primary = self)} actions={{ open, close, toggle }}>
-                    <Text class="actions" label={show(s => (s ? ICONS.Less : ICONS.More))} />
+                    <Text class="actions" label={show.as(s => (s ? ICONS.Less : ICONS.More))} />
                 </Primary>
                 <revealer
                     revealChild={show}
                     transitionType={Transition.SLIDE_DOWN}
-                    $$childRevealed={self =>
+                    onNotifyChildRevealed={self =>
                         view.scroll_to(self.child_revealed ? secondary : primary, null)
                     }>
                     <box orientation={Orientation.VERTICAL}>
@@ -72,8 +72,8 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
                             const action = () => (close(), info.launch_action(a, null));
                             return (
                                 <button $={self => (secondary = self)}>
-                                    <Event.Click $left={action} />
-                                    <Event.Key $return={action} $left={close} />
+                                    <Event.Click onLeft={action} />
+                                    <Event.Key onReturn={action} onLeft={close} />
                                     <Enter />
                                     <Text label={info.get_action_name(a) || a} />
                                 </button>
@@ -89,22 +89,19 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
 };
 
 export default () => {
-    const [open] = OPEN();
-    const [text, text_] = TEXT();
+    const [open] = Closer.open('launcher');
 
     let entry: Gtk.Entry;
     let view: Gtk.Viewport;
 
-    <Closer visible={open} $close={() => close()} />;
-
     return (
         <Popup visible={open} transitionType={Transition.CROSSFADE} keymode={Keymode.ON_DEMAND}>
-            <Event.Key $escape={() => close()} />
+            <Event.Key onEscape={() => close()} />
             <box class="launcher" orientation={Orientation.VERTICAL}>
                 <entry
-                    text={text}
-                    $$text={self => (text_(self.text), self.set_position(-1))}
-                    $activate={() => (close(), LIST().get()[0]?.launch())}
+                    text={TEXT}
+                    onNotifyText={self => (TEXT_(self.text), self.set_position(-1))}
+                    onActivate={() => (close(), LIST().get()[0]?.launch())}
                     $={self => ((entry = self), listen(open, o => o && self.grab_focus()))}
                 />
                 <scrolledwindow
@@ -121,6 +118,6 @@ export default () => {
     );
 };
 
-export const open = () => (TEXT()[1](''), OPEN()[1](true));
+export const open = () => (APPS().reload(), TEXT_(''), Closer.open('launcher')[1](true));
 
-export const close = () => OPEN()[1](false);
+export const close = () => Closer.open('launcher')[1](false);
