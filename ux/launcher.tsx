@@ -5,7 +5,7 @@ import Apps from 'gi://AstalApps';
 import Gio from 'gi://Gio';
 
 import { compute, listen, state } from '../lib/sub';
-import { Props, Static } from '../lib/util';
+import { Config, Props, Static } from '../lib/util';
 import { Closer, Event, Icon, Text, Popup } from '../lib/widget';
 
 const ICONS = {
@@ -25,6 +25,16 @@ const OFFSET = Static(() => new Gtk.Adjustment());
 
 const DROP = Symbol();
 
+function launch(app: Apps.Application, action?: string) {
+    close();
+    app.frequency++;
+    const info = app.app as Gio.DesktopAppInfo;
+    const util = (i: number) => Config.util('launcher', i, app, { action });
+    action
+        ? util(1) || util(0) || info.launch_action(action, null)
+        : util(0) || info.launch([], null);
+}
+
 const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
     const Enter = () => (
         <Event.Hover onHover={(e, h) => h && !entry.is_focus && e.widget.grab_focus()} />
@@ -32,8 +42,8 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
     type Actions = { open: () => void; close: () => void; toggle: () => void };
     const Primary = ({ actions, children }: Props.Button & { actions?: Actions }) => (
         <button>
-            <Event.Click onLeft={launch} onRight={actions?.toggle} />
-            <Event.Key onReturn={launch} onRight={actions?.open} onLeft={actions?.close} />
+            <Event.Click onLeft={primary} onRight={actions?.toggle} />
+            <Event.Key onReturn={primary} onRight={actions?.open} onLeft={actions?.close} />
             <Enter />
             <box>
                 <Icon from={app} icon={[{ icon: 'icon_name' }]} />
@@ -42,7 +52,7 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
             </box>
         </button>
     );
-    const launch = () => (close(), app.launch());
+    const primary = () => launch(app);
 
     const info = app.app as Gio.DesktopAppInfo;
     const list = info.list_actions();
@@ -69,7 +79,7 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
                     }>
                     <box orientation={Orientation.VERTICAL}>
                         {list.map(a => {
-                            const action = () => (close(), info.launch_action(a, null));
+                            const action = () => launch(app, a);
                             return (
                                 <button $={self => (secondary = self)}>
                                     <Event.Click onLeft={action} />
@@ -101,7 +111,10 @@ export default () => {
                 <entry
                     text={TEXT}
                     onNotifyText={self => (TEXT_(self.text), self.set_position(-1))}
-                    onActivate={() => (close(), LIST().get()[0]?.launch())}
+                    onActivate={() => {
+                        const first = LIST().get()[0];
+                        first && launch(first);
+                    }}
                     $={self => ((entry = self), listen(open, o => o && self.grab_focus()))}
                 />
                 <scrolledwindow

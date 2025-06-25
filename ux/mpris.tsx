@@ -83,7 +83,7 @@ export default () => {
         <Toggle
             id="mpris"
             label={ICON()}
-            visible={players.as(p => p.length > 0)}
+            reveal={players.as(p => p.length > 0)}
             onSecondary={() => {
                 const playing = mpris.players.filter(p => p.playback_status === PLAYING);
                 for (const p of playing) {

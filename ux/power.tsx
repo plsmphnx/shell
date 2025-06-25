@@ -1,4 +1,4 @@
-import { execAsync } from 'ags/process';
+import { exec } from 'ags/process';
 
 import Battery from 'gi://AstalBattery';
 
@@ -96,10 +96,7 @@ export default () => (
     <Toggle id="power" label={ICON()} tooltipText={TOOL()}>
         <box class="power menu" orientation={Orientation.VERTICAL}>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
-                <button
-                    label={(ICONS.Commands as any)[name]}
-                    onClicked={() => execAsync(cmd)}
-                />
+                <button label={(ICONS.Commands as any)[name]} onClicked={() => exec(cmd)} />
             ))}
         </box>
     </Toggle>

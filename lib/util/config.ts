@@ -1,5 +1,4 @@
 import App from 'ags/gtk4/app';
-import { execAsync } from 'ags/process';
 
 import Hyprland from 'gi://AstalHyprland';
 import GLib from 'gi://GLib';
@@ -10,17 +9,13 @@ import * as Icon from './icon';
 
 const UTILS: { [id: string]: string[] | undefined } = {};
 
-export function utils(id: string) {
-    return {
-        onPrimary: () => {
-            const util = UTILS[id]?.[0];
-            util && execAsync(util);
-        },
-        onSecondary: () => {
-            const util = UTILS[id]?.[1];
-            util && execAsync(util);
-        },
-    };
+export function util(id: string, i: number, ...ctx: any[]) {
+    const util = UTILS[id]?.[i]
+        .replace(/{(\w+)}/g, (_, k) => String(ctx.reduce((v, c) => v ?? c[k], undefined)))
+        .split(' ');
+    return util
+        ? (Hyprland.get_default().dispatch(util.shift()!, util.join(' ')), true)
+        : false;
 }
 
 export function reload() {
@@ -72,6 +67,8 @@ export function reload() {
     for (const id of key(cfg, 'utils')) {
         UTILS[id] = lst(cfg, 'utils', id);
     }
+
+    setLayerRules();
 }
 
 function val(cfg: GLib.KeyFile, group: string, key: string, def: string) {
@@ -110,4 +107,12 @@ function getopts(vals: { [id: string]: string }) {
         vals[opt.option] = String(opt[vals[opt.option]]);
     }
     return vals;
+}
+
+const LAYER_RULES = ['unset', 'blur', 'blurpopups', 'ignorealpha 0.2', 'noanim'];
+
+function setLayerRules() {
+    Hyprland.get_default().message(
+        `[[BATCH]]${LAYER_RULES.map(rule => `keyword layerrule ${rule},shell`).join(';')}`,
+    );
 }

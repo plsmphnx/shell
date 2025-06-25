@@ -4,7 +4,7 @@ import { Gtk } from 'ags/gtk4';
 import Wp from 'gi://AstalWp';
 
 import { bind, lazy, listen, popup, reduce, watch } from '../lib/sub';
-import { Config, Icon, Select, Static } from '../lib/util';
+import { Icon, Select, Static } from '../lib/util';
 import { Popup, Status } from '../lib/widget';
 
 const ICONS = {
@@ -32,11 +32,11 @@ const SPEAKER = Static(() => volume('default_speaker'));
 const MICROPHONE = Static(() => volume('default_microphone'));
 
 type Props = Status.Props & {
-    name: string;
+    id: string;
     icons: { Off: string; On: (volume: number) => string };
     volume: Accessor<number>;
 };
-const Audio = ({ name, icons, volume, ...rest }: Props) => {
+const Audio = ({ id, icons, volume, ...rest }: Props) => {
     const icon = volume.as(v => (v === 0 ? icons.Off : icons.On(v)));
 
     const [pop, pop_] = popup();
@@ -53,16 +53,16 @@ const Audio = ({ name, icons, volume, ...rest }: Props) => {
         </box>
     </Popup>;
 
-    return <Status label={icon} {...Config.utils(name)} {...rest} />;
+    return <Status id={id} label={icon} {...rest} />;
 };
 
-export const Speaker = () => <Audio name="speaker" icons={ICONS.Speaker} volume={SPEAKER()} />;
+export const Speaker = () => <Audio id="speaker" icons={ICONS.Speaker} volume={SPEAKER()} />;
 
 export const Microphone = () => (
     <Audio
-        name="microphone"
+        id="microphone"
         icons={ICONS.Microphone}
         volume={MICROPHONE()}
-        visible={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
+        reveal={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
     />
 );

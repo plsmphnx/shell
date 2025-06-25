@@ -9,9 +9,9 @@ import {
     Setter,
 } from 'ags';
 import * as GObject from 'ags/gobject';
-import { Time, timeout } from 'ags/time';
+import { createPoll as poll, Time, timeout } from 'ags/time';
 
-export { bind, compute, connect, external, state };
+export { bind, compute, connect, external, poll, state };
 
 export function filter<T>(ary: T[], fn: (v: T) => Accessor<boolean>) {
     return compute(ary.map(fn), (...f) => ary.filter((_, i) => f[i]));

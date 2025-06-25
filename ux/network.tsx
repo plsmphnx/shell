@@ -1,7 +1,7 @@
 import Network from 'gi://AstalNetwork';
 
 import { bind, compute } from '../lib/sub';
-import { Config, Icon, Static } from '../lib/util';
+import { Icon, Static } from '../lib/util';
 import { Status } from '../lib/widget';
 
 const { WIFI, WIRED } = Network.Primary;
@@ -36,4 +36,4 @@ const ICON = Static(() => {
     );
 });
 
-export default () => <Status label={ICON()} {...Config.utils('network')} />;
+export default () => <Status id="network" label={ICON()} />;

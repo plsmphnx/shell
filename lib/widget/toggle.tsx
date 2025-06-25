@@ -12,9 +12,9 @@ export namespace Toggle {
         drop?: Accessor<boolean>;
     };
 }
-export const Toggle = ({ id, visible, drop, children, ...rest }: Toggle.Props) => {
+export const Toggle = ({ id, reveal, drop, children, ...rest }: Toggle.Props) => {
     const [open, open_] = Closer.open(id);
-    listen(visible, v => v || open_(false));
+    listen(reveal, v => v || open_(false));
 
     <Popup
         visible={drop ? compute([open, drop], (o, d) => o || d) : open}
@@ -26,8 +26,9 @@ export const Toggle = ({ id, visible, drop, children, ...rest }: Toggle.Props) =
 
     return (
         <Status
+            id={id}
             onPrimary={() => open_(o => !o)}
-            visible={visible}
+            reveal={reveal}
             class={open.as(o => (o ? 'bright' : ''))}
             {...rest}
         />

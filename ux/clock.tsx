@@ -1,19 +1,13 @@
 import { Gtk } from 'ags/gtk4';
-import { interval } from 'ags/time';
 
 import GLib from 'gi://GLib';
 
-import { external, listen } from '../lib/sub';
+import { listen, poll } from '../lib/sub';
 import { Static } from '../lib/util';
 import { Toggle } from '../lib/widget';
 
 const TIME = Static(() =>
-    external('', set => {
-        const time = interval(1000, () =>
-            set(GLib.DateTime.new_now_local().format('%I:%M %p')!),
-        );
-        return () => time.cancel();
-    }),
+    poll('', 1000, () => GLib.DateTime.new_now_local().format('%I:%M %p')!),
 );
 
 export default () => (

@@ -1,7 +1,7 @@
 import Bluetooth from 'gi://AstalBluetooth';
 
 import { watch } from '../lib/sub';
-import { Config, Static } from '../lib/util';
+import { Static } from '../lib/util';
 import { Status } from '../lib/widget';
 
 const ICONS = {
@@ -16,4 +16,4 @@ const ICON = Static(() =>
     ),
 );
 
-export default () => <Status label={ICON()} {...Config.utils('bluetooth')} />;
+export default () => <Status id="bluetooth" label={ICON()} />;

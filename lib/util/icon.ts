@@ -17,7 +17,7 @@ const [CLIENT, CLIENT_] = state<[string, string][]>([]);
 
 export function client(): Accessor<(client: Hyprland.Client) => string> {
     return CLIENT.as(
-        i => c => i.find(([cls]) => c.class.toLowerCase().includes(cls))?.[1] ?? '\u{0f2d0}',
+        i => c => i.find(([cls]) => c.class.toLowerCase().includes(cls))?.[1] || '\u{0f2d0}',
     );
 }
 

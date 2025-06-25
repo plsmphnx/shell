@@ -5,7 +5,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     ags = {
-      url = "github:aylur/ags/04083ebdca20764ce3d9d432419c23459eabb245";
+      url = "github:aylur/ags/bbc3d04b271d2bfc5f357e688e014bce8dc7f0e2";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         astal.follows = "astal";

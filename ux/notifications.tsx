@@ -53,7 +53,7 @@ export default () => {
         <Toggle
             id="notifications"
             label={ICONS.Icon}
-            visible={notifications.as(n => n.length > 0)}
+            reveal={notifications.as(n => n.length > 0)}
             drop={compute([pop, hover], (p, h) => p || h)}
             onSecondary={() => {
                 for (const n of notifd.notifications) {
