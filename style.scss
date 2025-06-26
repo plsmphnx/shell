@@ -184,14 +184,14 @@ tooltip {
 
 .volume {
     @include float;
-    min-width: 0.5 * $popup;
+    min-width: calc($popup / 2);
     label {
         font-size: 125%;
         margin-right: $margin;
     }
     trough,
     progress {
-        border-radius: calc(0.5 * $border);
+        border-radius: calc($border / 2);
         min-height: $border;
     }
     trough {
@@ -203,11 +203,10 @@ tooltip {
 }
 
 scale trough {
-    border-radius: 0.5em;
+    border-radius: calc($border + 0.5em - 0.5px);
     border: $border solid $shd;
 }
 scale.horizontal trough {
-    padding: 0 0.5em;
     margin: 0 $margin;
 }
 slider {
@@ -237,6 +236,6 @@ calendar {
 header,
 separator.horizontal {
     border-bottom: $border solid $shd;
-    padding-bottom: 0.5 * $margin;
-    margin-bottom: 0.5 * $margin;
+    padding-bottom: calc($margin / 2);
+    margin-bottom: calc($margin / 2);
 }

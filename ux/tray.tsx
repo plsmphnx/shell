@@ -16,6 +16,7 @@ function item(item: Tray.TrayItem) {
             />
             <Gtk.PopoverMenu
                 menuModel={bind(item, 'menu_model')}
+                hasArrow={false}
                 $={self => {
                     menu = self;
                     listen(bind(item, 'action_group'), ag =>

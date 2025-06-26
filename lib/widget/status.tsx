@@ -1,7 +1,7 @@
 import { Accessor } from 'ags';
 import { Gtk } from 'ags/gtk4';
 
-import { Config, Props } from '../util';
+import { Props, Utils } from '../util';
 
 import * as Event from './event';
 
@@ -17,8 +17,8 @@ export const Status = ({ id, reveal, onPrimary, onSecondary, ...rest }: Status.P
     const inner = (
         <label {...rest}>
             <Event.Click
-                onLeft={onPrimary || (() => Config.util(id, 0))}
-                onRight={onSecondary || (() => Config.util(id, 1))}
+                onLeft={onPrimary || (() => Utils.run(id, 0))}
+                onRight={onSecondary || (() => Utils.run(id, 1))}
             />
         </label>
     );

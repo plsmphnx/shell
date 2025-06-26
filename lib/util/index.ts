@@ -2,6 +2,7 @@ export * as Config from './config';
 export * as Icon from './icon';
 export * as Monitor from './monitor';
 export * as Props from './props';
+export * as Utils from './utils';
 
 export type Select<T, U> = {
     [P in keyof T as T[P] extends U | undefined ? P : never]: T[P];
