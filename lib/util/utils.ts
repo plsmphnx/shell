@@ -3,7 +3,7 @@ import { exec } from 'ags/process';
 let UTILS: { [id: string]: string[] | undefined } = {};
 
 export function run(id: string, i: number, ...ctx: any[]) {
-    const util = UTILS[id]?.[i].replace(/{(\w+)}/g, (_, k) =>
+    const util = UTILS[id]?.[i]?.replace(/{(\w+)}/g, (_, k) =>
         String(ctx.reduce((v, c) => v ?? c[k], undefined)),
     );
     return util ? (exec(util), true) : false;

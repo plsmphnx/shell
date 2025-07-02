@@ -46,7 +46,7 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
             <Event.Key onReturn={primary} onRight={actions?.open} onLeft={actions?.close} />
             <Enter />
             <box>
-                <Icon from={app} icon={[{ icon: 'icon_name' }]} />
+                <Icon from={app} icon="icon_name" />
                 <Text label={app.name} />
                 <Fragment>{children}</Fragment>
             </box>

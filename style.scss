@@ -18,9 +18,10 @@ $btxtsrc: var(--image1);
 $btxtcut: var(--slice1);
 $btxtsiz: var(--width1);
 
-$margin: 0.5em;
-$icon: 2em + (2 * $margin);
-$popup: 8 * $icon;
+$text: var(--text);
+$margin: var(--margin);
+$icon: var(--icon);
+$popup: var(--popup);
 
 * {
     all: unset;
@@ -28,7 +29,7 @@ $popup: 8 * $icon;
 
 window {
     font-family: 'Symbols Nerd Font Mono', $font;
-    font-size: 14px;
+    font-size: $text;
     color: $txt;
 }
 
@@ -76,7 +77,7 @@ window {
 .workspaces {
     padding: 0 calc($border / 2);
     label {
-        padding: 0 calc($margin / 1.25);
+        padding: 0 $margin;
         margin: 0 calc($border / -2);
         font-size: 125%;
         &.unfocused:not(:hover) {
@@ -127,9 +128,6 @@ window {
     min-height: $icon;
     border-radius: $radius;
     margin-right: $margin;
-    background-position: center;
-    background-size: contain;
-    background-repeat: no-repeat;
 }
 
 .launcher {
@@ -144,7 +142,7 @@ window {
     button {
         border-radius: $radius;
         padding: 0 $margin;
-        min-height: ($icon * 0.75);
+        min-height: calc(0.75 * $icon);
         &:focus {
             background-color: $shd;
         }
@@ -157,7 +155,7 @@ window {
         padding-left: $margin;
     }
     label:first-child {
-        padding-left: ($icon + $margin);
+        padding-left: calc($icon + $margin);
     }
 }
 
@@ -173,7 +171,7 @@ tooltip {
             color: $dim;
         }
         &:not(:first-child) {
-            margin-top: calc($margin / 2);
+            margin-top: $margin;
         }
     }
 }
@@ -203,17 +201,17 @@ tooltip {
 }
 
 scale trough {
-    border-radius: calc($border + 0.5em - 0.5px);
+    border-radius: calc($border + ($text / 2) - 0.5px);
     border: $border solid $shd;
 }
 scale.horizontal trough {
     margin: 0 $margin;
 }
 slider {
-    border-radius: 0.5em;
+    border-radius: calc($text / 2);
     background-color: $dim;
-    min-height: 1em;
-    min-width: 1em;
+    min-height: $text;
+    min-width: $text;
     &:hover {
         background-color: $txt;
     }

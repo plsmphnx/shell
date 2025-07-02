@@ -28,11 +28,7 @@ const notify = (n: Notifd.Notification, pop_: (ms: number) => void) => {
                     onRight={() => n.dismiss()}
                 />
                 <Event.Hover onHover={(_, h) => hover_(h)} />
-                <Icon
-                    from={n}
-                    icon={[{ file: 'image' }, { icon: 'desktop_entry' }, { icon: 'app_icon' }]}
-                    valign={Align.START}
-                />
+                <Icon from={n} icon="image desktop_entry app_icon" valign={Align.START} />
                 <Text.Box orientation={Orientation.VERTICAL}>
                     <Text class="title" label={n.summary} />
                     <Text label={n.body} wrap />

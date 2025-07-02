@@ -3,7 +3,7 @@ import { For } from 'ags';
 import Mpris from 'gi://AstalMpris';
 
 import { bind, compute, reduce } from '../lib/sub';
-import { Static, time } from '../lib/util';
+import { Config, Static, time } from '../lib/util';
 import { Action, Icon, Text, Toggle } from '../lib/widget';
 
 const { PLAYING } = Mpris.PlaybackStatus;
@@ -45,18 +45,14 @@ const player = (p: Mpris.Player) => {
                 ],
                 [ICONS.Next, () => p.next(), bind(p, 'can_go_next')],
             ]}>
-            <Icon
-                from={p}
-                icon={[{ file: 'cover_art' }, { url: 'art_url' }]}
-                valign={Align.START}
-            />
+            <Icon from={p} icon="cover_art art_url" valign={Align.START} />
             <Text.Box orientation={Orientation.VERTICAL}>
                 <box>
                     <Text class="title" label={bind(p, 'title')} hexpand wrap />
                     <image
                         iconName={bind(p, 'entry')}
+                        pixelSize={Config.Size.Text}
                         tooltipText={bind(p, 'identity')}
-                        valign={Align.START}
                     />
                 </box>
                 <Text class="subtitle" label={bind(p, 'artist')} wrap />

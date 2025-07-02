@@ -4,9 +4,19 @@ import Hyprland from 'gi://AstalHyprland';
 import GLib from 'gi://GLib';
 
 import style from '../../style.scss';
+import { state } from '../sub';
 
 import * as Icon from './icon';
 import * as Utils from './utils';
+
+const [TEXT, TEXT_] = state(0);
+
+export namespace Size {
+    export const Text = TEXT;
+    export const Margin = TEXT.as(t => t / 2);
+    export const Icon = TEXT.as(t => 3 * t);
+    export const Popup = TEXT.as(t => 24 * t);
+}
 
 export function reload() {
     let css = style;
@@ -24,6 +34,13 @@ export function reload() {
     const color = lst(cfg, 'style', 'color');
     vals.fg = color[0] || 'white';
     vals.bg = color[1] || 'black';
+
+    const text = val(cfg, 'style', 'font-size', '14');
+    TEXT_(Number(text));
+    vals.text = `${Size.Text.get()}px`;
+    vals.margin = `${Size.Margin.get()}px`;
+    vals.icon = `${Size.Icon.get()}px`;
+    vals.popup = `${Size.Popup.get()}px`;
 
     const font = val(cfg, 'style', 'font-family', opts['misc:font_family']);
     vals.font = `'${font}'`;

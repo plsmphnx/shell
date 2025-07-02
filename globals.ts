@@ -9,6 +9,7 @@ declare global {
 
     const Align: typeof Gtk.Align;
     const Orientation: typeof Gtk.Orientation;
+    const Overflow: typeof Gtk.Overflow;
     const Policy: typeof Gtk.PolicyType;
     const Transition: typeof Gtk.RevealerTransitionType;
 
@@ -23,6 +24,7 @@ Object.assign(globalThis, {
 
     Align: Gtk.Align,
     Orientation: Gtk.Orientation,
+    Overflow: Gtk.Overflow,
     Policy: Gtk.PolicyType,
     Transition: Gtk.RevealerTransitionType,
 

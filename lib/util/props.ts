@@ -1,9 +1,6 @@
-import { CCProps } from 'ags';
-import { Astal, Gtk } from 'ags/gtk4';
-
-export type Box = CCProps<Gtk.Box, Gtk.Box.ConstructorProps>;
-export type Button = CCProps<Gtk.Button, Gtk.Button.ConstructorProps>;
-export type Label = CCProps<Gtk.Label, Gtk.Label.ConstructorProps>;
-export type Revealer = CCProps<Gtk.Revealer, Gtk.Revealer.ConstructorProps>;
-export type Widget = CCProps<Gtk.Widget, Gtk.Widget.ConstructorProps>;
-export type Window = CCProps<Astal.Window, Astal.Window.ConstructorProps>;
+export type Box = JSX.IntrinsicElements['box'];
+export type Button = JSX.IntrinsicElements['button'];
+export type Image = JSX.IntrinsicElements['image'];
+export type Label = JSX.IntrinsicElements['label'];
+export type Revealer = JSX.IntrinsicElements['revealer'];
+export type Window = JSX.IntrinsicElements['window'];
