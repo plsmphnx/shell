@@ -6,17 +6,7 @@ import GLib from 'gi://GLib';
 import style from '../../style.scss';
 
 import * as Icon from './icon';
-
-const UTILS: { [id: string]: string[] | undefined } = {};
-
-export function util(id: string, i: number, ...ctx: any[]) {
-    const util = UTILS[id]?.[i]
-        .replace(/{(\w+)}/g, (_, k) => String(ctx.reduce((v, c) => v ?? c[k], undefined)))
-        .split(' ');
-    return util
-        ? (Hyprland.get_default().dispatch(util.shift()!, util.join(' ')), true)
-        : false;
-}
+import * as Utils from './utils';
 
 export function reload() {
     let css = style;
@@ -60,13 +50,7 @@ export function reload() {
     App.apply_css(css, true);
 
     Icon.reload(key(cfg, 'icons').map(cls => [cls, val(cfg, 'icons', cls, '0f2d0')]));
-
-    for (const id in UTILS) {
-        delete UTILS[id];
-    }
-    for (const id of key(cfg, 'utils')) {
-        UTILS[id] = lst(cfg, 'utils', id);
-    }
+    Utils.reload(key(cfg, 'utils').map(id => [id, lst(cfg, 'utils', id)]));
 
     setLayerRules();
 }

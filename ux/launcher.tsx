@@ -5,7 +5,7 @@ import Apps from 'gi://AstalApps';
 import Gio from 'gi://Gio';
 
 import { compute, listen, state } from '../lib/sub';
-import { Config, Props, Static } from '../lib/util';
+import { Props, Static, Utils } from '../lib/util';
 import { Closer, Event, Icon, Text, Popup } from '../lib/widget';
 
 const ICONS = {
@@ -29,7 +29,7 @@ function launch(app: Apps.Application, action?: string) {
     close();
     app.frequency++;
     const info = app.app as Gio.DesktopAppInfo;
-    const util = (i: number) => Config.util('launcher', i, app, { action });
+    const util = (i: number) => Utils.run('launcher', i, app, { action });
     action
         ? util(1) || util(0) || info.launch_action(action, null)
         : util(0) || info.launch([], null);
