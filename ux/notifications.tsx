@@ -56,10 +56,12 @@ export default () => {
                     n.dismiss();
                 }
             }}>
-            <box orientation={Orientation.VERTICAL}>
-                <Event.Hover onHover={(_, h) => hover_(h)} />
-                <For each={notifications}>{n => notify(n, pop_)}</For>
-            </box>
+            {() => (
+                <box orientation={Orientation.VERTICAL}>
+                    <Event.Hover onHover={(_, h) => hover_(h)} />
+                    <For each={notifications}>{n => notify(n, pop_)}</For>
+                </box>
+            )}
         </Toggle>
     );
 };

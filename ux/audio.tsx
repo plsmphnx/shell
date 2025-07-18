@@ -47,10 +47,12 @@ const Audio = ({ id, icons, volume, ...rest }: Props) => {
         transitionType={Transition.SLIDE_UP}
         transitionDuration={1000}
         anchor={Anchor.BOTTOM}>
-        <box class="volume">
-            <label label={icon} />
-            <Gtk.ProgressBar fraction={volume} hexpand valign={Align.CENTER} />
-        </box>
+        {() => (
+            <box class="volume">
+                <label label={icon} />
+                <Gtk.ProgressBar fraction={volume} hexpand valign={Align.CENTER} />
+            </box>
+        )}
     </Popup>;
 
     return <Status id={id} label={icon} {...rest} />;

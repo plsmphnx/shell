@@ -7,10 +7,11 @@ import { Popup } from './popup';
 import { Status } from './status';
 
 export namespace Toggle {
-    export type Props = Omit<Status.Props, 'onPrimary'> & {
-        id: string;
-        drop?: Accessor<boolean>;
-    };
+    export type Props = Pick<Popup.Props, 'children'> &
+        Omit<Status.Props, 'onPrimary' | 'children'> & {
+            id: string;
+            drop?: Accessor<boolean>;
+        };
 }
 export const Toggle = ({ id, reveal, drop, children, ...rest }: Toggle.Props) => {
     const [open, open_] = Closer.open(id);

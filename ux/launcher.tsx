@@ -106,27 +106,29 @@ export default () => {
 
     return (
         <Popup visible={open} transitionType={Transition.CROSSFADE} keymode={Keymode.ON_DEMAND}>
-            <Event.Key onEscape={() => close()} />
-            <box class="launcher" orientation={Orientation.VERTICAL}>
-                <entry
-                    text={TEXT}
-                    onNotifyText={self => (TEXT_(self.text), self.set_position(-1))}
-                    onActivate={() => {
-                        const first = LIST().get()[0];
-                        first && launch(first);
-                    }}
-                    $={self => ((entry = self), listen(open, o => o && self.grab_focus()))}
-                />
-                <scrolledwindow
-                    hscrollbarPolicy={Policy.NEVER}
-                    vscrollbarPolicy={Policy.EXTERNAL}
-                    vadjustment={OFFSET()}
-                    $={self => (view = self.child as Gtk.Viewport)}>
-                    <box orientation={Orientation.VERTICAL}>
-                        <For each={LIST()}>{app => item(app, entry, view)}</For>
-                    </box>
-                </scrolledwindow>
-            </box>
+            {() => (
+                <box class="launcher" orientation={Orientation.VERTICAL}>
+                    <Event.Key onEscape={() => close()} />
+                    <entry
+                        text={TEXT}
+                        onNotifyText={self => (TEXT_(self.text), self.set_position(-1))}
+                        onActivate={() => {
+                            const first = LIST().get()[0];
+                            first && launch(first);
+                        }}
+                        $={self => ((entry = self), listen(open, o => o && self.grab_focus()))}
+                    />
+                    <scrolledwindow
+                        hscrollbarPolicy={Policy.NEVER}
+                        vscrollbarPolicy={Policy.EXTERNAL}
+                        vadjustment={OFFSET()}
+                        $={self => (view = self.child as Gtk.Viewport)}>
+                        <box orientation={Orientation.VERTICAL}>
+                            <For each={LIST()}>{app => item(app, entry, view)}</For>
+                        </box>
+                    </scrolledwindow>
+                </box>
+            )}
         </Popup>
     );
 };

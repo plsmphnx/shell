@@ -89,9 +89,11 @@ export default () => {
                     mpris.players[0].play();
                 }
             }}>
-            <box orientation={Orientation.VERTICAL}>
-                <For each={players}>{player}</For>
-            </box>
+            {() => (
+                <box orientation={Orientation.VERTICAL}>
+                    <For each={players}>{player}</For>
+                </box>
+            )}
         </Toggle>
     );
 };
