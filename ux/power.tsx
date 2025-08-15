@@ -55,18 +55,19 @@ const COMMANDS = {
     Lock: 'loginctl lock-session',
 };
 
+const PROPS = ['device_type', 'state', 'percentage', 'time_to_empty', 'time_to_full'] as const;
+
 function state({ device_type, state }: Pick<Battery.Device, 'device_type' | 'state'>) {
     return device_type === BATTERY ? state : UNKNOWN;
 }
 
-const ICON_PROPS = ['device_type', 'state', 'percentage'] as const;
 const ICON = Static(() =>
-    watch(Battery.get_default(), ICON_PROPS, bat => {
+    watch(Battery.get_default(), PROPS, bat => {
         switch (state(bat)) {
             case CHARGING:
-                return ICONS.Charging(bat.percentage);
+                return bat.time_to_full > 0 ? ICONS.Charging(bat.percentage) : ICONS.Icon;
             case DISCHARGING:
-                return ICONS.Draining(bat.percentage);
+                return bat.time_to_empty > 0 ? ICONS.Draining(bat.percentage) : ICONS.Alert;
             case EMPTY:
                 return ICONS.Alert;
             default:
@@ -75,15 +76,14 @@ const ICON = Static(() =>
     }),
 );
 
-const TOOL_PROPS = [...ICON_PROPS, 'time_to_empty', 'time_to_full'] as const;
 const TOOL = Static(() =>
-    watch(Battery.get_default(), TOOL_PROPS, bat => {
+    watch(Battery.get_default(), PROPS, bat => {
         const p = Math.floor(bat.percentage * 100);
         switch (state(bat)) {
             case CHARGING:
-                return `${p}% (${time(bat.time_to_full)})`;
+                return bat.time_to_full > 0 ? `${p}% (${time(bat.time_to_full)})` : `${p}%`;
             case DISCHARGING:
-                return `${p}% (${time(bat.time_to_empty)})`;
+                return bat.time_to_empty > 0 ? `${p}% (${time(bat.time_to_empty)})` : `${p}%`;
             case EMPTY:
                 return '0%';
             default:

@@ -4,7 +4,7 @@ import { Gtk } from 'ags/gtk4';
 import Wp from 'gi://AstalWp';
 
 import { bind, lazy, listen, popup, reduce, watch } from '../lib/sub';
-import { Icon, Select, Static } from '../lib/util';
+import { Icon, Select } from '../lib/util';
 import { Popup, Status } from '../lib/widget';
 
 const ICONS = {
@@ -19,24 +19,18 @@ const ICONS = {
     },
 };
 
-function volume(device: keyof Select<Wp.Audio, Wp.Endpoint>) {
-    return reduce(
-        bind(Wp.get_default()!.audio, device).as(dev =>
-            watch(dev, ['mute', 'volume'], ({ mute, volume }) => (mute ? 0 : volume)),
-        ),
-    );
-}
-
-const SPEAKER = Static(() => volume('default_speaker'));
-
-const MICROPHONE = Static(() => volume('default_microphone'));
-
 type Props = Status.Props & {
     id: string;
     icons: { Off: string; On: (volume: number) => string };
-    volume: Accessor<number>;
+    device: keyof Select<Wp.Audio, Wp.Endpoint>;
 };
-const Audio = ({ id, icons, volume, ...rest }: Props) => {
+const Audio = ({ id, icons, device, ...rest }: Props) => {
+    const { audio } = Wp.get_default()!;
+    const volume = reduce(
+        bind(audio, device).as(dev =>
+            watch(dev, ['mute', 'volume'], ({ mute, volume }) => (mute ? 0 : volume)),
+        ),
+    );
     const icon = volume.as(v => (v === 0 ? icons.Off : icons.On(v)));
 
     const [pop, pop_] = popup();
@@ -53,16 +47,25 @@ const Audio = ({ id, icons, volume, ...rest }: Props) => {
         </box>
     </Popup>;
 
-    return <Status id={id} label={icon} {...rest} />;
+    return (
+        <Status
+            id={id}
+            label={icon}
+            {...rest}
+            onSecondary={() => (audio[device].mute = !audio[device].mute)}
+        />
+    );
 };
 
-export const Speaker = () => <Audio id="speaker" icons={ICONS.Speaker} volume={SPEAKER()} />;
+export const Speaker = () => (
+    <Audio id="speaker" icons={ICONS.Speaker} device="default_speaker" />
+);
 
 export const Microphone = () => (
     <Audio
         id="microphone"
         icons={ICONS.Microphone}
-        volume={MICROPHONE()}
+        device="default_microphone"
         reveal={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
     />
 );
