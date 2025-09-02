@@ -15,10 +15,7 @@
   outputs = { self, nixpkgs, ags, astal }: let
     systems = fn: nixpkgs.lib.mapAttrs fn nixpkgs.legacyPackages;
 
-    core = system: with astal.packages.${system}; [
-      astal4
-      io
-    ];
+    core = system: with astal.packages.${system}; [ astal4 ];
 
     libs = system: with astal.packages.${system}; [
       apps

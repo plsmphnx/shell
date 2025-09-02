@@ -15,12 +15,8 @@ App.start({
         For({ each: bind(App, 'monitors'), children: Monitor });
     },
 
-    client(msg: (msg: string) => string, ...args: string[]) {
-        console.log(msg(args.join(' ')));
-    },
-
-    requestHandler(req, ret) {
-        switch (req) {
+    requestHandler(req, res) {
+        switch (req.shift()) {
             case 'launch':
                 Launcher.open();
                 break;
@@ -31,6 +27,6 @@ App.start({
                 App.quit();
                 break;
         }
-        ret('');
+        res('');
     },
 });
