@@ -1,14 +1,14 @@
 {
   inputs = {
     ags = {
-      url = "github:aylur/ags";
+      url = "github:aylur/ags/v3.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
   outputs = { self, nixpkgs, ags }: let
     systems = fn: nixpkgs.lib.mapAttrs fn nixpkgs.legacyPackages;
 
-    core = pkgs: with pkgs.astal; [ astal4 io ];
+    core = pkgs: with pkgs.astal; [ astal4 ];
 
     libs = pkgs: with pkgs.astal; [
       apps
@@ -22,12 +22,12 @@
       wireplumber
     ];
 
-    ags_3 = system: pkgs: with pkgs; ags.packages.${system}.default.override {
-      astal3 = astal.astal3;
-      astal4 = astal.astal4;
-      astal-io = astal.io;
-      wrapGAppsHook = wrapGAppsHook4;
-    };
+    ags_3 = system: pkgs: with pkgs; with astal;
+      ags.packages.${system}.default.override {
+        inherit astal3 astal4;
+        astal-io = io;
+        wrapGAppsHook = wrapGAppsHook4;
+      };
   in {
     packages = systems (system: pkgs: {
       default = pkgs.stdenv.mkDerivation {
@@ -40,8 +40,8 @@
           (ags_3 system pkgs)
         ];
 
-        buildInputs = with builtins; (core pkgs) ++ (libs pkgs) ++ (
-          foldl' (a: b: a ++ b) [] (map (pkg: pkg.buildInputs) (libs pkgs))
+        buildInputs = builtins.concatLists (
+          map (pkg: [ pkg ] ++ pkg.buildInputs) ((core pkgs) ++ (libs pkgs))
         );
 
         installPhase = ''
