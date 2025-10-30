@@ -9,7 +9,7 @@ import {
     Setter,
 } from 'ags';
 import * as GObject from 'ags/gobject';
-import { createPoll as poll, Time, timeout } from 'ags/time';
+import { createPoll as poll, Timer, timeout } from 'ags/time';
 
 export { bind, compute, connect, external, poll, state };
 
@@ -33,7 +33,7 @@ export function listen<T>(val: Accessor<T> | T, cb: (v: T) => void) {
 }
 
 export function popup() {
-    const [time, time_] = state<Time | undefined>(undefined);
+    const [time, time_] = state<Timer | undefined>(undefined);
     onCleanup(() => time_(t => (t?.cancel(), undefined)));
     return [
         time.as(t => !!t),

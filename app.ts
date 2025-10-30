@@ -1,5 +1,6 @@
 import { For } from 'ags';
 import App from 'ags/gtk4/app';
+import { exec } from 'ags/process';
 
 import './globals';
 
@@ -13,14 +14,11 @@ App.start({
     main() {
         Config.reload();
         For({ each: bind(App, 'monitors'), children: Monitor });
-    },
-
-    client(msg: (msg: string) => string, ...args: string[]) {
-        console.log(msg(args.join(' ')));
+        exec('systemd-notify --ready');
     },
 
     requestHandler(req, ret) {
-        switch (req) {
+        switch (req[0]) {
             case 'launch':
                 Launcher.open();
                 break;
