@@ -35,7 +35,7 @@
         src = ./.;
 
         nativeBuildInputs = with pkgs; [
-          wrapGAppsHook
+          wrapGAppsHook4
           gobject-introspection
           ags.packages.${system}.default
         ];
@@ -47,6 +47,9 @@
 
           mkdir -p $out/bin
           ags bundle app.ts $out/bin/shell
+          cp -r etc $out/etc
+          substituteInPlace $out/etc/systemd/user/*.service \
+            --replace /usr/bin/shell $out/bin/shell
 
           runHook postInstall
         '';
