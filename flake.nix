@@ -1,23 +1,16 @@
 {
   inputs = {
-    astal = {
-      url = "github:aylur/astal";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     ags = {
       url = "github:aylur/ags";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        astal.follows = "astal";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, nixpkgs, ags, astal }: let
+  outputs = { self, nixpkgs, ags }: let
     systems = fn: nixpkgs.lib.mapAttrs fn nixpkgs.legacyPackages;
 
-    core = system: with astal.packages.${system}; [ astal4 ];
+    core = pkgs: with pkgs.astal; [ astal4 io ];
 
-    libs = system: with astal.packages.${system}; [
+    libs = pkgs: with pkgs.astal; [
       apps
       battery
       bluetooth
@@ -28,6 +21,13 @@
       tray
       wireplumber
     ];
+
+    ags_3 = system: pkgs: with pkgs; ags.packages.${system}.default.override {
+      astal3 = astal.astal3;
+      astal4 = astal.astal4;
+      astal-io = astal.io;
+      wrapGAppsHook = wrapGAppsHook4;
+    };
   in {
     packages = systems (system: pkgs: {
       default = pkgs.stdenv.mkDerivation {
@@ -37,10 +37,12 @@
         nativeBuildInputs = with pkgs; [
           wrapGAppsHook4
           gobject-introspection
-          ags.packages.${system}.default
+          (ags_3 system pkgs)
         ];
 
-        buildInputs = (core system) ++ (libs system);
+        buildInputs = with builtins; (core pkgs) ++ (libs pkgs) ++ (
+          foldl' (a: b: a ++ b) [] (map (pkg: pkg.buildInputs) (libs pkgs))
+        );
 
         installPhase = ''
           runHook preInstall
@@ -59,9 +61,7 @@
     devShells = systems (system: pkgs: {
       default = pkgs.mkShell {
         buildInputs = [
-          (ags.packages.${system}.default.override { 
-            extraPackages = libs system;
-          })
+          ((ags_3 system pkgs).override { extraPackages = libs pkgs; })
         ];
       };
     });
