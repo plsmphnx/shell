@@ -1,6 +1,7 @@
+import { createBinding, createComputed } from 'ags';
+
 import Bluetooth from 'gi://AstalBluetooth';
 
-import { watch } from '../lib/sub';
 import { Static } from '../lib/util';
 import { Status } from '../lib/widget';
 
@@ -10,10 +11,13 @@ const ICONS = {
     Connected: '\u{f00b1}',
 };
 
-const ICON = Static(() =>
-    watch(Bluetooth.get_default(), ['is_powered', 'is_connected'], bt =>
-        bt.is_powered ? (bt.is_connected ? ICONS.Connected : ICONS.On) : ICONS.Off,
-    ),
-);
+const ICON = Static(() => {
+    const bluetooth = Bluetooth.get_default();
+    const powered = createBinding(bluetooth, 'is_powered');
+    const connected = createBinding(bluetooth, 'is_connected');
+    return createComputed(() =>
+        powered() ? (connected() ? ICONS.Connected : ICONS.On) : ICONS.Off,
+    );
+});
 
 export default () => <Status id="bluetooth" label={ICON()} />;

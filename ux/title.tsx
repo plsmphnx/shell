@@ -1,11 +1,14 @@
+import { createBinding } from 'ags';
+
 import Hyprland from 'gi://AstalHyprland';
 
-import { bind, reduce } from '../lib/sub';
 import { Monitor, Static } from '../lib/util';
 import { Status } from '../lib/widget';
 
-function focused<K extends keyof Hyprland.Client>(key: Extract<K, string>) {
-    return reduce(bind(Hyprland.get_default(), 'focused_client').as(f => f && bind(f, key)));
+function focused<K extends keyof Hyprland.Client>(
+    key: Exclude<Extract<K, string>, '$signals'>,
+) {
+    return createBinding(Hyprland.get_default(), 'focused_client', key);
 }
 
 const TITLE = Static(() => focused('title').as(t => t || ''));

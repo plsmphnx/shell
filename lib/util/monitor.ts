@@ -1,9 +1,7 @@
-import { Accessor, createContext } from 'ags';
+import { Accessor, createBinding, createContext, createComputed } from 'ags';
 import { Gdk } from 'ags/gtk4';
 
 import Hyprland from 'gi://AstalHyprland';
-
-import { bind, compute, reduce } from '../sub';
 
 export interface Current {
     gdk: Gdk.Monitor;
@@ -15,13 +13,10 @@ export function is(
     mon: Hyprland.Monitor | Accessor<Hyprland.Monitor>,
     gdk = Context.use().gdk,
 ) {
-    return compute(
-        [
-            bind(gdk, 'connector'),
-            mon instanceof Accessor
-                ? reduce(mon.as(m => m && bind(m, 'name')))
-                : bind(mon, 'name'),
-        ],
-        (c, n) => c === n,
-    );
+    const connector = createBinding(gdk, 'connector');
+    const name =
+        mon instanceof Accessor
+            ? createComputed(() => (mon() ? createBinding(mon(), 'name')() : ''))
+            : createBinding(mon, 'name');
+    return createComputed(() => connector() === name());
 }

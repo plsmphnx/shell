@@ -1,10 +1,9 @@
-import { Accessor } from 'ags';
+import { Accessor, createBinding, createEffect, createMemo } from 'ags';
 import { Gtk } from 'ags/gtk4';
 
 import Wp from 'gi://AstalWp';
 
-import { bind, lazy, listen, popup, reduce, watch } from '../lib/sub';
-import { Icon, Select } from '../lib/util';
+import { Icon, popup, Select } from '../lib/util';
 import { Popup, Status } from '../lib/widget';
 
 const ICONS = {
@@ -26,15 +25,14 @@ type Props = Status.Props & {
 };
 const Audio = ({ id, icons, device, ...rest }: Props) => {
     const { audio } = Wp.get_default()!;
-    const volume = reduce(
-        bind(audio, device).as(dev =>
-            watch(dev, ['mute', 'volume'], ({ mute, volume }) => (mute ? 0 : volume)),
-        ),
-    );
-    const icon = volume.as(v => (v === 0 ? icons.Off : icons.On(v)));
+    const mute = createBinding(audio, device, 'mute');
+    const volume = createBinding(audio, device, 'volume');
+    const display = createMemo(() => (mute() ? 0 : volume()));
+
+    const icon = display.as(v => (v === 0 ? icons.Off : icons.On(v)));
 
     const [pop, pop_] = popup();
-    listen(lazy(volume), () => pop_(5000));
+    createEffect(() => (display(), pop_(5000)));
 
     <Popup
         visible={pop}
@@ -43,7 +41,7 @@ const Audio = ({ id, icons, device, ...rest }: Props) => {
         anchor={Anchor.BOTTOM}>
         <box class="volume">
             <label label={icon} />
-            <Gtk.ProgressBar fraction={volume} hexpand valign={Align.CENTER} />
+            <Gtk.ProgressBar fraction={display} hexpand valign={Align.CENTER} />
         </box>
     </Popup>;
 
@@ -66,6 +64,6 @@ export const Microphone = () => (
         id="microphone"
         icons={ICONS.Microphone}
         device="default_microphone"
-        reveal={bind(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
+        reveal={createBinding(Wp.get_default()!.audio, 'recorders').as(r => r.length > 0)}
     />
 );

@@ -1,24 +1,14 @@
-import { State } from 'ags';
+import { createComputed, createState, State } from 'ags';
 
-import { compute, reduce, state } from '../sub';
 import { Static } from '../util';
 
 import * as Event from './event';
 import { Window } from './window';
 import { Workaround } from './workaround';
 
-const [OPEN, OPEN_] = state<{ [id: string]: State<boolean> }>({});
+const [OPEN, OPEN_] = createState<{ [id: string]: State<boolean> }>({});
 
-const ANY = Static(() =>
-    reduce(
-        OPEN.as(o =>
-            compute(
-                Object.values(o).map(o => o[0]),
-                (...o) => o.some(o => o),
-            ),
-        ),
-    ),
-);
+const ANY = Static(() => createComputed(() => Object.values(OPEN()).some(([o]) => o())));
 
 export const Closer = () => (
     <Window
@@ -28,7 +18,7 @@ export const Closer = () => (
         visible={ANY()}>
         <Event.Click
             onAny={() => {
-                for (const [, open_] of Object.values(OPEN.get())) {
+                for (const [, open_] of Object.values(OPEN.peek())) {
                     open_(false);
                 }
             }}
@@ -39,6 +29,6 @@ export const Closer = () => (
 export type Closer = Window;
 
 Closer.open = (id: string) => {
-    OPEN_(o => (id in o ? o : { ...o, [id]: state(false) }));
-    return OPEN.get()[id];
+    OPEN_(o => (id in o ? o : { ...o, [id]: createState(false) }));
+    return OPEN.peek()[id];
 };

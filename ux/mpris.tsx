@@ -1,8 +1,7 @@
-import { For } from 'ags';
+import { createBinding, createComputed, For } from 'ags';
 
 import Mpris from 'gi://AstalMpris';
 
-import { bind, compute, reduce } from '../lib/sub';
 import { Config, Static, time } from '../lib/util';
 import { Action, Icon, Text, Toggle } from '../lib/widget';
 
@@ -17,45 +16,43 @@ const ICONS = {
     Paused: '\u{f075b}',
 };
 
-const ICON = Static(() =>
-    reduce(
-        bind(Mpris.get_default(), 'players').as(ps =>
-            compute(
-                ps.map(p => bind(p, 'playback_status')),
-                (...ss) => (ss.every(s => s !== PLAYING) ? ICONS.Paused : ICONS.Icon),
-            ),
-        ),
-    ),
-);
+const ICON = Static(() => {
+    const players = createBinding(Mpris.get_default(), 'players');
+    return createComputed(() =>
+        players().every(p => createBinding(p, 'playback_status')() !== PLAYING)
+            ? ICONS.Paused
+            : ICONS.Icon,
+    );
+});
 
 const player = (p: Mpris.Player) => {
-    const pos = bind(p, 'position');
-    const len = bind(p, 'length');
-    const val = compute([pos, len], (p, l) => (l > 0 ? p / l : 0));
+    const pos = createBinding(p, 'position');
+    const len = createBinding(p, 'length');
+    const val = createComputed(() => (len() > 0 ? pos() / len() : 0));
     return (
         <Action
             actions={[
-                [ICONS.Prev, () => p.previous(), bind(p, 'can_go_previous')],
+                [ICONS.Prev, () => p.previous(), createBinding(p, 'can_go_previous')],
                 [
-                    bind(p, 'playback_status').as(s =>
+                    createBinding(p, 'playback_status').as(s =>
                         s === PLAYING ? ICONS.Pause : ICONS.Play,
                     ),
                     () => p.play_pause(),
-                    bind(p, 'can_play'),
+                    createBinding(p, 'can_play'),
                 ],
-                [ICONS.Next, () => p.next(), bind(p, 'can_go_next')],
+                [ICONS.Next, () => p.next(), createBinding(p, 'can_go_next')],
             ]}>
             <Icon from={p} icon="cover_art art_url" valign={Align.START} />
             <Text.Box orientation={Orientation.VERTICAL}>
                 <box>
-                    <Text class="title" label={bind(p, 'title')} hexpand wrap />
+                    <Text class="title" label={createBinding(p, 'title')} hexpand wrap />
                     <image
-                        iconName={bind(p, 'entry')}
+                        iconName={createBinding(p, 'entry')}
                         pixelSize={Config.Size.Text}
-                        tooltipText={bind(p, 'identity')}
+                        tooltipText={createBinding(p, 'identity')}
                     />
                 </box>
-                <Text class="subtitle" label={bind(p, 'artist')} wrap />
+                <Text class="subtitle" label={createBinding(p, 'artist')} wrap />
                 <box visible={len.as(l => l > 0)}>
                     <label label={pos.as(time)} />
                     <slider
@@ -74,7 +71,7 @@ const player = (p: Mpris.Player) => {
 
 export default () => {
     const mpris = Mpris.get_default();
-    const players = bind(mpris, 'players');
+    const players = createBinding(mpris, 'players');
     return (
         <Toggle
             id="mpris"

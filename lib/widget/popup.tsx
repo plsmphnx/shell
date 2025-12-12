@@ -1,9 +1,8 @@
-import { Accessor } from 'ags';
+import { Accessor, createBinding, createEffect, createMemo } from 'ags';
 import { Gtk } from 'ags/gtk4';
 
 import Hyprland from 'gi://AstalHyprland';
 
-import { bind, compute, lazy, listen } from '../sub';
 import { Props, Monitor } from '../util';
 
 import { Window } from './window';
@@ -22,20 +21,21 @@ export const Popup = ({
 }: Popup.Props) => {
     let win: Window;
     let rev: Gtk.Revealer;
-    const focused = Monitor.is(bind(Hyprland.get_default(), 'focused_monitor'));
+    const focused = Monitor.is(createBinding(Hyprland.get_default(), 'focused_monitor'));
     const reveal =
         visible instanceof Accessor
-            ? compute([visible, focused], (v, f) => v && f)
+            ? createMemo(() => visible() && focused())
             : visible && focused;
     return (
         <Window
             layer={Layer.OVERLAY}
             $={self => {
                 win = self;
-                listen(lazy(reveal ?? false), r => {
-                    rev.reveal_child = rev.child_revealed && r;
-                    win.visible = win.visible || r;
-                });
+                reveal &&
+                    createEffect(() => {
+                        rev.reveal_child = reveal() && rev.child_revealed;
+                        win.visible = reveal() || win.visible;
+                    });
             }}
             defaultHeight={-1}
             defaultWidth={-1}

@@ -1,10 +1,9 @@
-import { For, Fragment, State } from 'ags';
+import { createComputed, createEffect, createState, For, Fragment, State } from 'ags';
 import { Gtk } from 'ags/gtk4';
 
 import Apps from 'gi://AstalApps';
-import Gio from 'gi://Gio';
+import Gio from 'gi://GioUnix';
 
-import { compute, listen, state } from '../lib/sub';
 import { Props, Static, Utils } from '../lib/util';
 import { Closer, Event, Icon, Text, Popup } from '../lib/widget';
 
@@ -13,13 +12,14 @@ const ICONS = {
     Less: '\u{f0140}',
 };
 
-const [TEXT, TEXT_] = state('');
+const [TEXT, TEXT_] = createState('');
 
 const APPS = Static(() => new Apps.Apps({ min_score: 0.5 }));
 
-const LIST = Static(() =>
-    compute([Closer.open('launcher')[0], TEXT], (o, t) => (o ? APPS().exact_query(t) : [])),
-);
+const LIST = Static(() => {
+    const [open] = Closer.open('launcher');
+    return createComputed(() => (open() ? APPS().exact_query(TEXT()) : []));
+});
 
 const OFFSET = Static(() => new Gtk.Adjustment());
 
@@ -58,7 +58,7 @@ const item = (app: Apps.Application, entry: Gtk.Entry, view: Gtk.Viewport) => {
     const list = info.list_actions();
     if (list.length > 0) {
         const [show, show_] = ((app as any)[DROP] ||
-            ((app as any)[DROP] = state(false))) as State<boolean>;
+            ((app as any)[DROP] = createState(false))) as State<boolean>;
         let primary: Gtk.Button;
         let secondary: Gtk.Button;
 
@@ -112,10 +112,12 @@ export default () => {
                     text={TEXT}
                     onNotifyText={self => (TEXT_(self.text), self.set_position(-1))}
                     onActivate={() => {
-                        const first = LIST().get()[0];
+                        const [first] = LIST().peek();
                         first && launch(first);
                     }}
-                    $={self => ((entry = self), listen(open, o => o && self.grab_focus()))}
+                    $={self => (
+                        (entry = self), createEffect(() => open() && self.grab_focus())
+                    )}
                 />
                 <scrolledwindow
                     hscrollbarPolicy={Policy.NEVER}

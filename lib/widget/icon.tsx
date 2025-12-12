@@ -1,11 +1,10 @@
-import { With } from 'ags';
+import { createBinding, createComputed, With } from 'ags';
 import * as GObject from 'ags/gobject';
 import { Gdk, Gtk } from 'ags/gtk4';
 
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
-import { bind, compute } from '../sub';
 import { Config, Props } from '../util';
 
 function props(p: string) {
@@ -42,7 +41,8 @@ export namespace Icon {
     };
 }
 export const Icon = ({ from, icon, ...rest }: Icon.Props) => {
-    const icons = compute(icon.split(' ').map(k => bind(from, k as any)));
+    const binds = icon.split(' ').map(k => createBinding(from, k as any));
+    const icons = createComputed(() => binds.map(b => b()));
     return (
         <box>
             <With value={icons}>{i => build(i, rest)}</With>

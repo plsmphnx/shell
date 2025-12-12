@@ -1,8 +1,8 @@
+import { createBinding, createComputed } from 'ags';
 import { exec } from 'ags/process';
 
 import Battery from 'gi://AstalBattery';
 
-import { watch } from '../lib/sub';
 import { Icon, Static, time } from '../lib/util';
 import { Toggle } from '../lib/widget';
 
@@ -55,42 +55,50 @@ const COMMANDS = {
     Lock: 'loginctl lock-session',
 };
 
-const PROPS = ['device_type', 'state', 'percentage', 'time_to_empty', 'time_to_full'] as const;
-
-function state({ device_type, state }: Pick<Battery.Device, 'device_type' | 'state'>) {
-    return device_type === BATTERY ? state : UNKNOWN;
+function props() {
+    const battery = Battery.get_default();
+    const type = createBinding(battery, 'device_type');
+    const state = createBinding(battery, 'state');
+    return {
+        state: createComputed(() => (type() === BATTERY ? state() : UNKNOWN)),
+        percent: createBinding(battery, 'percentage'),
+        empty: createBinding(battery, 'time_to_empty'),
+        full: createBinding(battery, 'time_to_full'),
+    };
 }
 
-const ICON = Static(() =>
-    watch(Battery.get_default(), PROPS, bat => {
-        switch (state(bat)) {
+const ICON = Static(() => {
+    const battery = props();
+    return createComputed(() => {
+        switch (battery.state()) {
             case CHARGING:
-                return bat.time_to_full > 0 ? ICONS.Charging(bat.percentage) : ICONS.Icon;
+                return battery.full() > 0 ? ICONS.Charging(battery.percent()) : ICONS.Icon;
             case DISCHARGING:
-                return bat.time_to_empty > 0 ? ICONS.Draining(bat.percentage) : ICONS.Alert;
+                return battery.empty() > 0 ? ICONS.Draining(battery.percent()) : ICONS.Alert;
             case EMPTY:
                 return ICONS.Alert;
             default:
                 return ICONS.Icon;
         }
-    }),
-);
+    });
+});
 
-const TOOL = Static(() =>
-    watch(Battery.get_default(), PROPS, bat => {
-        const p = Math.floor(bat.percentage * 100);
-        switch (state(bat)) {
+const TOOL = Static(() => {
+    const battery = props();
+    return createComputed(() => {
+        const p = Math.floor(battery.percent() * 100);
+        switch (battery.state()) {
             case CHARGING:
-                return bat.time_to_full > 0 ? `${p}% (${time(bat.time_to_full)})` : `${p}%`;
+                return battery.full() > 0 ? `${p}% (${time(battery.full())})` : `${p}%`;
             case DISCHARGING:
-                return bat.time_to_empty > 0 ? `${p}% (${time(bat.time_to_empty)})` : `${p}%`;
+                return battery.empty() > 0 ? `${p}% (${time(battery.empty())})` : `${p}%`;
             case EMPTY:
                 return '0%';
             default:
                 return '100%';
         }
-    }),
-);
+    });
+});
 
 export default () => (
     <Toggle id="power" label={ICON()} tooltipText={TOOL()}>

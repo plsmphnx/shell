@@ -1,48 +1,46 @@
 {
   inputs = {
     ags = {
-      url = "github:aylur/ags/v3.0.0";
+      url = "github:aylur/ags/v3.1.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
   outputs = { self, nixpkgs, ags }: let
-    systems = fn: nixpkgs.lib.mapAttrs fn nixpkgs.legacyPackages;
-
-    core = pkgs: with pkgs.astal; [ astal4 ];
-
-    libs = pkgs: with pkgs.astal; [
-      apps
-      battery
-      bluetooth
-      hyprland
-      mpris
-      network
-      notifd
-      tray
-      wireplumber
-    ];
-
-    ags_3 = system: pkgs: with pkgs; with astal;
-      ags.packages.${system}.default.override {
+    systems = fn: nixpkgs.lib.mapAttrs (system: pkgs: fn pkgs (
+      with pkgs.astal; ags.packages.${system}.default.override {
         inherit astal3 astal4;
         astal-io = io;
-        wrapGAppsHook = wrapGAppsHook4;
-      };
+      }
+    )) nixpkgs.legacyPackages;
+
+    deps = pkgs: with pkgs.astal; builtins.concatLists (
+      map (pkg: [ pkg ] ++ pkg.buildInputs) [
+        astal4
+
+        apps
+        battery
+        bluetooth
+        hyprland
+        mpris
+        network
+        notifd
+        tray
+        wireplumber
+      ]
+    );
   in {
-    packages = systems (system: pkgs: {
+    packages = systems (pkgs: ags: {
       default = pkgs.stdenv.mkDerivation {
         name = "shell";
         src = ./.;
 
         nativeBuildInputs = with pkgs; [
-          wrapGAppsHook4
+          ags
           gobject-introspection
-          (ags_3 system pkgs)
+          wrapGAppsHook4
         ];
 
-        buildInputs = builtins.concatLists (
-          map (pkg: [ pkg ] ++ pkg.buildInputs) ((core pkgs) ++ (libs pkgs))
-        );
+        buildInputs = deps pkgs;
 
         installPhase = ''
           runHook preInstall
@@ -58,11 +56,9 @@
       };
     });
 
-    devShells = systems (system: pkgs: {
+    devShells = systems (pkgs: ags: {
       default = pkgs.mkShell {
-        buildInputs = [
-          ((ags_3 system pkgs).override { extraPackages = libs pkgs; })
-        ];
+        buildInputs = [ (ags.override { extraPackages = deps pkgs; }) ];
       };
     });
   };

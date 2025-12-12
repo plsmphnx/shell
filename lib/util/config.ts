@@ -1,15 +1,15 @@
+import { createState } from 'ags';
 import App from 'ags/gtk4/app';
 
 import Hyprland from 'gi://AstalHyprland';
 import GLib from 'gi://GLib';
 
 import style from '../../style.scss';
-import { state } from '../sub';
 
 import * as Icon from './icon';
 import * as Utils from './utils';
 
-const [TEXT, TEXT_] = state(0);
+const [TEXT, TEXT_] = createState(0);
 
 export namespace Size {
     export const Text = TEXT;
@@ -37,10 +37,10 @@ export function reload() {
 
     const text = val(cfg, 'style', 'font-size', '14');
     TEXT_(Number(text));
-    vals.text = `${Size.Text.get()}px`;
-    vals.margin = `${Size.Margin.get()}px`;
-    vals.icon = `${Size.Icon.get()}px`;
-    vals.popup = `${Size.Popup.get()}px`;
+    vals.text = `${Size.Text.peek()}px`;
+    vals.margin = `${Size.Margin.peek()}px`;
+    vals.icon = `${Size.Icon.peek()}px`;
+    vals.popup = `${Size.Popup.peek()}px`;
 
     const font = val(cfg, 'style', 'font-family', opts['misc:font_family']);
     vals.font = `'${font}'`;

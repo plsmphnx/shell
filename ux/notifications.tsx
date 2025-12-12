@@ -1,8 +1,8 @@
-import { For } from 'ags';
+import { createBinding, createComputed, createState, For } from 'ags';
 
 import Notifd from 'gi://AstalNotifd';
 
-import { bind, compute, popup, state } from '../lib/sub';
+import { popup } from '../lib/util';
 import { Action, Event, Icon, Text, Toggle } from '../lib/widget';
 
 const ICONS = {
@@ -12,13 +12,13 @@ const ICONS = {
 const notify = (n: Notifd.Notification, pop_: (ms: number) => void) => {
     const open = Toggle.open('notifications');
     const [up, up_] = popup();
-    const [hover, hover_] = state(false);
+    const [hover, hover_] = createState(false);
 
     const defaultAction = n.actions.find(({ id }) => id === 'default');
     const customActions = n.actions.filter(({ id }) => id !== 'default');
     return (
         <revealer
-            revealChild={compute([open, up, hover], (o, u, h) => o || u || h)}
+            revealChild={createComputed(() => open() || up() || hover())}
             transitionType={Transition.SLIDE_DOWN}
             transitionDuration={1000}
             $={() => (pop_(5000), up_(5000))}>
@@ -40,17 +40,17 @@ const notify = (n: Notifd.Notification, pop_: (ms: number) => void) => {
 
 export default () => {
     const notifd = Notifd.get_default();
-    const notifications = bind(notifd, 'notifications');
+    const notifications = createBinding(notifd, 'notifications');
 
     const [pop, pop_] = popup();
-    const [hover, hover_] = state(false);
+    const [hover, hover_] = createState(false);
 
     return (
         <Toggle
             id="notifications"
             label={ICONS.Icon}
             reveal={notifications.as(n => n.length > 0)}
-            drop={compute([pop, hover], (p, h) => p || h)}
+            drop={createComputed(() => pop() || hover())}
             onSecondary={() => {
                 for (const n of notifd.notifications) {
                     n.dismiss();

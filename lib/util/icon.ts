@@ -1,8 +1,6 @@
-import { Accessor } from 'ags';
+import { Accessor, createState } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
-
-import { state } from '../sub';
 
 export const SPACE = '\u{f1050}';
 
@@ -13,7 +11,7 @@ export function select(...icons: string[]) {
     };
 }
 
-const [CLIENT, CLIENT_] = state<[string, string][]>([]);
+const [CLIENT, CLIENT_] = createState<[string, string][]>([]);
 
 export function client(): Accessor<(client: Hyprland.Client) => string> {
     return CLIENT.as(

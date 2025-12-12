@@ -1,6 +1,4 @@
-import { Accessor } from 'ags';
-
-import { compute, listen } from '../sub';
+import { Accessor, createComputed, createEffect } from 'ags';
 
 import { Closer } from './closer';
 import { Popup } from './popup';
@@ -14,10 +12,10 @@ export namespace Toggle {
 }
 export const Toggle = ({ id, reveal, drop, children, ...rest }: Toggle.Props) => {
     const [open, open_] = Closer.open(id);
-    listen(reveal, v => v || open_(false));
+    reveal && createEffect(() => reveal() || open_(false));
 
     <Popup
-        visible={drop ? compute([open, drop], (o, d) => o || d) : open}
+        visible={drop ? createComputed(() => open() || drop()) : open}
         transitionType={Transition.SLIDE_DOWN}
         transitionDuration={1000}
         anchor={Anchor.TOP | Anchor.RIGHT}>

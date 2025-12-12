@@ -1,40 +1,47 @@
-import { Accessor, For } from 'ags';
+import { Accessor, createBinding, createComputed, createConnection, For } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
 
-import { bind, compute, connect, filter, reduce, watch } from '../lib/sub';
 import { Icon, Monitor, Static } from '../lib/util';
 import { Event } from '../lib/widget';
 
-function clients<K extends Extract<keyof Hyprland.Client, string>>(
-    keys: readonly K[],
-    cb: (c: Pick<Hyprland.Client, K>) => boolean | Accessor<boolean>,
-) {
-    return reduce(
-        compute([bind(Hyprland.get_default(), 'clients'), Icon.client()], (cs, icon) =>
-            filter(cs, c => reduce(watch(c, keys, cb))).as(cs => cs.map(icon).sort().join(' ')),
-        ),
+function clients(cb: (c: Hyprland.Client) => boolean | Accessor<boolean>) {
+    const clients = createBinding(Hyprland.get_default(), 'clients');
+    const icon = Icon.client();
+    return createComputed(() =>
+        clients()
+            .filter(c => {
+                const f = cb(c);
+                return f instanceof Accessor ? f() : f;
+            })
+            .map(icon())
+            .sort()
+            .join(' '),
     );
 }
 
-const SUBMAP = Static(() => connect('', [Hyprland.get_default(), 'submap', s => s]));
+const SUBMAP = Static(() => createConnection('', [Hyprland.get_default(), 'submap', s => s]));
 
 export default () => {
     const hyprland = Hyprland.get_default();
-    const f = bind(hyprland, 'focused_workspace');
+    const f = createBinding(hyprland, 'focused_workspace');
     const { gdk } = Monitor.Context.use();
 
-    const workspace = (w: Hyprland.Workspace) => (
+    const workspace = (ws: Hyprland.Workspace) => (
         <label
-            class={f.as(f => (f === w ? 'target' : 'unfocused target'))}
-            label={clients(['workspace', 'floating'], c => !c.floating && c.workspace === w)}
-            visible={Monitor.is(bind(w, 'monitor'), gdk)}>
-            <Event.Click onLeft={() => hyprland.dispatch('workspace', String(w.id))} />
+            class={f.as(f => (f === ws ? 'target' : 'unfocused target'))}
+            label={clients(
+                c => !createBinding(c, 'floating')() && createBinding(c, 'workspace')() === ws,
+            )}
+            visible={Monitor.is(createBinding(ws, 'monitor'), gdk)}>
+            <Event.Click onLeft={() => hyprland.dispatch('workspace', String(ws.id))} />
         </label>
     );
 
-    const ws = bind(hyprland, 'workspaces');
-    const cs = clients(['monitor', 'floating'], c => c.floating && Monitor.is(c.monitor, gdk));
+    const ws = createBinding(hyprland, 'workspaces');
+    const cs = clients(
+        c => createBinding(c, 'floating')() && Monitor.is(createBinding(c, 'monitor'), gdk),
+    );
     return (
         <box class="workspaces">
             <box>

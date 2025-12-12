@@ -1,7 +1,6 @@
-import { Accessor } from 'ags';
+import { Accessor, createComputed, createState } from 'ags';
 import { Gtk } from 'ags/gtk4';
 
-import { compute, state } from '../sub';
 import { Props } from '../util';
 
 import * as Event from './event';
@@ -16,13 +15,10 @@ export const Action = ({ actions = [], ...rest }: Action.Props) => {
         return <box {...rest} class="action" />;
     }
 
-    const [hover, hover_] = state(false);
+    const [hover, hover_] = createState(false);
     const visible = actions.some(([, , v]) => !v)
         ? hover
-        : compute(
-              actions.map(([, , v]) => v!).concat(hover),
-              (...v) => v.pop()! && v.some(v => v),
-          );
+        : createComputed(() => hover() && actions.some(([, , v]) => v!()));
 
     return (
         <box class="action" orientation={Orientation.VERTICAL}>
