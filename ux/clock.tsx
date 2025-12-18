@@ -1,4 +1,3 @@
-import { createEffect } from 'ags';
 import { Gtk } from 'ags/gtk4';
 import { createPoll } from 'ags/time';
 
@@ -14,17 +13,12 @@ const TIME = Static(() =>
 export default () => (
     <Toggle id="clock" class="target" label={TIME()}>
         <Gtk.Calendar
-            $={self => {
-                const open = Toggle.open('clock');
-                createEffect(() => {
-                    if (open()) {
-                        const now = GLib.DateTime.new_now_local();
-                        self.set_day(1);
-                        self.set_year(now.get_year());
-                        self.set_month(now.get_month() - 1);
-                        self.set_day(now.get_day_of_month());
-                    }
-                });
+            onMap={self => {
+                const now = GLib.DateTime.new_now_local();
+                self.set_day(1);
+                self.set_year(now.get_year());
+                self.set_month(now.get_month() - 1);
+                self.set_day(now.get_day_of_month());
             }}
         />
     </Toggle>

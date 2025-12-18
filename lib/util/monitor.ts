@@ -9,14 +9,8 @@ export interface Current {
 
 export const Context = createContext<Current>(undefined!);
 
-export function is(
-    mon: Hyprland.Monitor | Accessor<Hyprland.Monitor>,
-    gdk = Context.use().gdk,
-) {
+export function is(mon: Accessor<Hyprland.Monitor>, gdk = Context.use().gdk) {
     const connector = createBinding(gdk, 'connector');
-    const name =
-        mon instanceof Accessor
-            ? createComputed(() => (mon() ? createBinding(mon(), 'name')() : ''))
-            : createBinding(mon, 'name');
+    const name = createComputed(() => mon() && createBinding(mon(), 'name')());
     return createComputed(() => connector() === name());
 }

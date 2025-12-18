@@ -5,19 +5,10 @@ import Hyprland from 'gi://AstalHyprland';
 import { Icon, Monitor, Static } from '../lib/util';
 import { Event } from '../lib/widget';
 
-function clients(cb: (c: Hyprland.Client) => boolean | Accessor<boolean>) {
+function clients(cb: (c: Hyprland.Client) => boolean) {
     const clients = createBinding(Hyprland.get_default(), 'clients');
     const icon = Icon.client();
-    return createComputed(() =>
-        clients()
-            .filter(c => {
-                const f = cb(c);
-                return f instanceof Accessor ? f() : f;
-            })
-            .map(icon())
-            .sort()
-            .join(' '),
-    );
+    return createComputed(() => clients().filter(cb).map(icon()).sort().join(' '));
 }
 
 const SUBMAP = Static(() => createConnection('', [Hyprland.get_default(), 'submap', s => s]));
@@ -40,7 +31,7 @@ export default () => {
 
     const ws = createBinding(hyprland, 'workspaces');
     const cs = clients(
-        c => createBinding(c, 'floating')() && Monitor.is(createBinding(c, 'monitor'), gdk),
+        c => createBinding(c, 'floating')() && Monitor.is(createBinding(c, 'monitor'), gdk)(),
     );
     return (
         <box class="workspaces">
