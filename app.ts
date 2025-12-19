@@ -4,13 +4,14 @@ import { exec } from 'ags/process';
 
 import './globals';
 
-import { Config } from './lib/util';
+import { Config, Static } from './lib/util';
 
 import Monitor from './ux/monitor';
 import * as Launcher from './ux/launcher';
 
 App.start({
     main() {
+        Static.init();
         Config.reload();
         For({ each: createBinding(App, 'monitors'), children: Monitor });
         exec('systemd-notify --ready');

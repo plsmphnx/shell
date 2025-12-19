@@ -1,4 +1,4 @@
-import { Accessor, createBinding, createComputed, createConnection, For } from 'ags';
+import { createBinding, createComputed, createConnection, For } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
 
@@ -7,20 +7,20 @@ import { Event } from '../lib/widget';
 
 function clients(cb: (c: Hyprland.Client) => boolean) {
     const clients = createBinding(Hyprland.get_default(), 'clients');
-    const icon = Icon.client();
-    return createComputed(() => clients().filter(cb).map(icon()).sort().join(' '));
+    const icon = (c: Hyprland.Client) => Icon.client(c)();
+    return createComputed(() => clients().filter(cb).map(icon).sort().join(' '));
 }
 
 const SUBMAP = Static(() => createConnection('', [Hyprland.get_default(), 'submap', s => s]));
 
 export default () => {
     const hyprland = Hyprland.get_default();
-    const f = createBinding(hyprland, 'focused_workspace');
+    const focused = createBinding(hyprland, 'focused_workspace');
     const { gdk } = Monitor.Context.use();
 
     const workspace = (ws: Hyprland.Workspace) => (
         <label
-            class={f.as(f => (f === ws ? 'target' : 'unfocused target'))}
+            class={focused.as(f => (f === ws ? 'target' : 'unfocused target'))}
             label={clients(
                 c => !createBinding(c, 'floating')() && createBinding(c, 'workspace')() === ws,
             )}

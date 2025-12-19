@@ -19,8 +19,8 @@ const ICONS = {
 const ICON = Static(() => {
     const network = Network.get_default();
     const primary = createBinding(network, 'primary');
-    const enabled = createBinding(network.wifi, 'enabled');
-    const strength = createBinding(network.wifi, 'strength');
+    const enabled = createBinding(network, 'wifi', 'enabled');
+    const strength = createBinding(network, 'wifi', 'strength');
     return createComputed(() => {
         switch (primary()) {
             case WIFI:

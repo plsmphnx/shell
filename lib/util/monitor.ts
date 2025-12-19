@@ -11,6 +11,5 @@ export const Context = createContext<Current>(undefined!);
 
 export function is(mon: Accessor<Hyprland.Monitor>, gdk = Context.use().gdk) {
     const connector = createBinding(gdk, 'connector');
-    const name = createComputed(() => mon() && createBinding(mon(), 'name')());
-    return createComputed(() => connector() === name());
+    return createComputed(() => connector() === (mon() && createBinding(mon(), 'name')()));
 }

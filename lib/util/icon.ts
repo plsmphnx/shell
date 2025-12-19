@@ -1,4 +1,4 @@
-import { Accessor, createState } from 'ags';
+import { createBinding, createComputed, createState } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
 
@@ -13,10 +13,9 @@ export function select(...icons: string[]) {
 
 const [CLIENT, CLIENT_] = createState<[string, string][]>([]);
 
-export function client(): Accessor<(client: Hyprland.Client) => string> {
-    return CLIENT.as(
-        i => c => i.find(([cls]) => c.class.toLowerCase().includes(cls))?.[1] || '\u{0f2d0}',
-    );
+export function client(client: Hyprland.Client) {
+    const cls = createBinding(client, 'class').as(c => c.toLowerCase());
+    return createComputed(() => CLIENT().find(([c]) => cls().includes(c))?.[1] || '\u{0f2d0}');
 }
 
 export function reload(icons: [string, string][]) {

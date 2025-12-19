@@ -55,53 +55,34 @@ const COMMANDS = {
     Lock: 'loginctl lock-session',
 };
 
-function props() {
+const STATUS = Static(() => {
     const battery = Battery.get_default();
     const type = createBinding(battery, 'device_type');
     const state = createBinding(battery, 'state');
-    return {
-        state: createComputed(() => (type() === BATTERY ? state() : UNKNOWN)),
-        percent: createBinding(battery, 'percentage'),
-        empty: createBinding(battery, 'time_to_empty'),
-        full: createBinding(battery, 'time_to_full'),
-    };
-}
-
-const ICON = Static(() => {
-    const battery = props();
+    const percent = createBinding(battery, 'percentage');
+    const empty = createBinding(battery, 'time_to_empty');
+    const full = createBinding(battery, 'time_to_full');
     return createComputed(() => {
-        switch (battery.state()) {
+        const p = Math.floor(percent() * 100);
+        switch (type() === BATTERY ? state() : UNKNOWN) {
             case CHARGING:
-                return battery.full() > 0 ? ICONS.Charging(battery.percent()) : ICONS.Icon;
+                return full() > 0
+                    ? [ICONS.Charging(percent()), `${p}% (${time(full())})`]
+                    : [ICONS.Icon, `${p}%`];
             case DISCHARGING:
-                return battery.empty() > 0 ? ICONS.Draining(battery.percent()) : ICONS.Alert;
+                return empty() > 0
+                    ? [ICONS.Draining(percent()), `${p}% (${time(empty())})`]
+                    : [ICONS.Alert, `${p}%`];
             case EMPTY:
-                return ICONS.Alert;
+                return [ICONS.Alert, '0%'];
             default:
-                return ICONS.Icon;
-        }
-    });
-});
-
-const TOOL = Static(() => {
-    const battery = props();
-    return createComputed(() => {
-        const p = Math.floor(battery.percent() * 100);
-        switch (battery.state()) {
-            case CHARGING:
-                return battery.full() > 0 ? `${p}% (${time(battery.full())})` : `${p}%`;
-            case DISCHARGING:
-                return battery.empty() > 0 ? `${p}% (${time(battery.empty())})` : `${p}%`;
-            case EMPTY:
-                return '0%';
-            default:
-                return '100%';
+                return [ICONS.Icon, '100%'];
         }
     });
 });
 
 export default () => (
-    <Toggle id="power" label={ICON()} tooltipText={TOOL()}>
+    <Toggle id="power" label={STATUS().as(s => s[0])} tooltipText={STATUS().as(s => s[1])}>
         <box class="power menu" orientation={Orientation.VERTICAL}>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
                 <button label={(ICONS.Commands as any)[name]} onClicked={() => exec(cmd)} />

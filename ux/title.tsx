@@ -5,15 +5,13 @@ import Hyprland from 'gi://AstalHyprland';
 import { Monitor, Static } from '../lib/util';
 import { Status } from '../lib/widget';
 
-function focused<K extends keyof Hyprland.Client>(
-    key: Exclude<Extract<K, string>, '$signals'>,
-) {
-    return createBinding(Hyprland.get_default(), 'focused_client', key);
-}
+const TITLE = Static(() =>
+    createBinding(Hyprland.get_default(), 'focused_client', 'title').as(t => t || ''),
+);
 
-const TITLE = Static(() => focused('title').as(t => t || ''));
-
-const MONITOR = Static(() => focused('monitor'));
+const MONITOR = Static(() =>
+    createBinding(Hyprland.get_default(), 'focused_client', 'monitor'),
+);
 
 export default () => (
     <Status

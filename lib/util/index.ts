@@ -7,14 +7,11 @@ export * as Monitor from './monitor';
 export * as Props from './props';
 export * as Utils from './utils';
 
+export { Static } from './static';
+
 export type Select<T, U> = {
     [P in keyof T as T[P] extends U | undefined ? P : never]: T[P];
 };
-
-export function Static<T>(init: () => T): () => T {
-    const sym = Symbol();
-    return () => (sym in Static ? (Static as any)[sym] : ((Static as any)[sym] = init()));
-}
 
 export function time(sec: number) {
     const h = Math.floor(sec / 3600);

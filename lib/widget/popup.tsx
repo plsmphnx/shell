@@ -24,7 +24,7 @@ export const Popup = ({
     const show = createMemo(() => visible() && focused());
 
     const [state, state_] = createState([show.peek(), false]);
-    createEffect(() => state_(([w, r]) => [show() || r, show() && w]));
+    createEffect(() => state_(s => [show() || s[1], show() && s[0]]));
 
     return (
         <Window
@@ -32,13 +32,13 @@ export const Popup = ({
             defaultHeight={-1}
             defaultWidth={-1}
             {...rest}
-            visible={state.as(([w, _]) => w)}
+            visible={state.as(s => s[0])}
             onNotifyVisible={self => self.visible && state_([true, true])}>
             <Workaround>
                 <revealer
                     transitionType={transitionType}
                     transitionDuration={transitionDuration}
-                    revealChild={state.as(([_, r]) => r)}
+                    revealChild={state.as(s => s[1])}
                     onNotifyChildRevealed={self =>
                         self.child_revealed || state_([false, false])
                     }>
