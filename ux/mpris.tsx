@@ -1,4 +1,4 @@
-import { createBinding, createComputed, For } from 'ags';
+import { createBinding, createComputed, createMemo, For } from 'ags';
 
 import Mpris from 'gi://AstalMpris';
 
@@ -18,7 +18,7 @@ const ICONS = {
 
 const ICON = Static(() => {
     const players = createBinding(Mpris.get_default(), 'players');
-    return createComputed(() =>
+    return createMemo(() =>
         players().every(p => createBinding(p, 'playback_status')() !== PLAYING)
             ? ICONS.Paused
             : ICONS.Icon,

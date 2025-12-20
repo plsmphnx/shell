@@ -1,4 +1,4 @@
-import { createBinding, createComputed } from 'ags';
+import { createBinding, createMemo } from 'ags';
 import { exec } from 'ags/process';
 
 import Battery from 'gi://AstalBattery';
@@ -62,7 +62,7 @@ const STATUS = Static(() => {
     const percent = createBinding(battery, 'percentage');
     const empty = createBinding(battery, 'time_to_empty');
     const full = createBinding(battery, 'time_to_full');
-    return createComputed(() => {
+    return createMemo(() => {
         const p = Math.floor(percent() * 100);
         switch (type() === BATTERY ? state() : UNKNOWN) {
             case CHARGING:

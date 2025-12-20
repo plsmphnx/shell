@@ -1,4 +1,4 @@
-import { createBinding, createComputed, createConnection, For } from 'ags';
+import { createBinding, createConnection, createMemo, For } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
 
@@ -8,7 +8,7 @@ import { Event } from '../lib/widget';
 function clients(cb: (c: Hyprland.Client) => boolean) {
     const clients = createBinding(Hyprland.get_default(), 'clients');
     const icon = (c: Hyprland.Client) => Icon.client(c)();
-    return createComputed(() => clients().filter(cb).map(icon).sort().join(' '));
+    return createMemo(() => clients().filter(cb).map(icon).sort().join(' '));
 }
 
 const SUBMAP = Static(() => createConnection('', [Hyprland.get_default(), 'submap', s => s]));

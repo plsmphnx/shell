@@ -1,4 +1,4 @@
-import { createComputed, createEffect, createState, For, Fragment, State } from 'ags';
+import { createEffect, createMemo, createState, For, Fragment, State } from 'ags';
 import { Gtk } from 'ags/gtk4';
 
 import Apps from 'gi://AstalApps';
@@ -18,7 +18,7 @@ const APPS = Static(() => new Apps.Apps({ min_score: 0.5 }));
 
 const LIST = Static(() => {
     const [open] = Closer.open('launcher');
-    return createComputed(() => (open() ? APPS().exact_query(TEXT()) : []));
+    return createMemo(() => (open() ? APPS().exact_query(TEXT()) : []));
 });
 
 const OFFSET = Static(() => new Gtk.Adjustment());

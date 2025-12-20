@@ -1,4 +1,4 @@
-import { createComputed, createState, State } from 'ags';
+import { createMemo, createState, State } from 'ags';
 
 import { Static } from '../util';
 
@@ -8,7 +8,7 @@ import { Workaround } from './workaround';
 
 const [OPEN, OPEN_] = createState<{ [id: string]: State<boolean> }>({});
 
-const ANY = Static(() => createComputed(() => Object.values(OPEN()).some(([o]) => o())));
+const ANY = Static(() => createMemo(() => Object.values(OPEN()).some(([o]) => o())));
 
 export const Closer = () => (
     <Window

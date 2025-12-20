@@ -1,4 +1,4 @@
-import { createBinding, createComputed } from 'ags';
+import { createBinding, createMemo } from 'ags';
 
 import Network from 'gi://AstalNetwork';
 
@@ -21,7 +21,7 @@ const ICON = Static(() => {
     const primary = createBinding(network, 'primary');
     const enabled = createBinding(network, 'wifi', 'enabled');
     const strength = createBinding(network, 'wifi', 'strength');
-    return createComputed(() => {
+    return createMemo(() => {
         switch (primary()) {
             case WIFI:
                 return enabled() ? ICONS.Wifi.On(strength() / 100) : ICONS.Wifi.Off;

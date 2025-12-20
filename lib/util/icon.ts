@@ -1,4 +1,4 @@
-import { createBinding, createComputed, createState } from 'ags';
+import { createBinding, createMemo, createState } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
 
@@ -15,7 +15,7 @@ const [CLIENT, CLIENT_] = createState<[string, string][]>([]);
 
 export function client(client: Hyprland.Client) {
     const cls = createBinding(client, 'class').as(c => c.toLowerCase());
-    return createComputed(() => CLIENT().find(([c]) => cls().includes(c))?.[1] || '\u{0f2d0}');
+    return createMemo(() => CLIENT().find(([c]) => cls().includes(c))?.[1] || '\u{0f2d0}');
 }
 
 export function reload(icons: [string, string][]) {

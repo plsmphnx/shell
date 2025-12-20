@@ -1,4 +1,4 @@
-import { createBinding, createComputed, With } from 'ags';
+import { createBinding, createMemo, With } from 'ags';
 import * as GObject from 'ags/gobject';
 import { Gdk, Gtk } from 'ags/gtk4';
 
@@ -42,7 +42,7 @@ export namespace Icon {
 }
 export const Icon = ({ from, icon, ...rest }: Icon.Props) => {
     const binds = icon.split(' ').map(k => createBinding(from, k as any));
-    const icons = createComputed(() => binds.map(b => b()));
+    const icons = createMemo(() => binds.map(b => b()));
     return (
         <box>
             <With value={icons}>{i => build(i, rest)}</With>

@@ -1,4 +1,4 @@
-import { createBinding, createComputed } from 'ags';
+import { createBinding, createMemo } from 'ags';
 
 import Bluetooth from 'gi://AstalBluetooth';
 
@@ -15,7 +15,7 @@ const ICON = Static(() => {
     const bluetooth = Bluetooth.get_default();
     const powered = createBinding(bluetooth, 'is_powered');
     const connected = createBinding(bluetooth, 'is_connected');
-    return createComputed(() =>
+    return createMemo(() =>
         powered() ? (connected() ? ICONS.Connected : ICONS.On) : ICONS.Off,
     );
 });
