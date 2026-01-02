@@ -68,8 +68,6 @@ export function reload() {
 
     Icon.reload(key(cfg, 'icons').map(cls => [cls, val(cfg, 'icons', cls, '0f2d0')]));
     Utils.reload(key(cfg, 'utils').map(id => [id, lst(cfg, 'utils', id)]));
-
-    setLayerRules();
 }
 
 function val(cfg: GLib.KeyFile, group: string, key: string, def: string) {
@@ -108,12 +106,4 @@ function getopts(vals: { [id: string]: string }) {
         vals[opt.option] = String(opt[vals[opt.option]]);
     }
     return vals;
-}
-
-const LAYER_RULES = ['unset', 'blur', 'blurpopups', 'ignorealpha 0.2', 'noanim'];
-
-function setLayerRules() {
-    Hyprland.get_default().message(
-        `[[BATCH]]${LAYER_RULES.map(rule => `keyword layerrule ${rule},shell`).join(';')}`,
-    );
 }

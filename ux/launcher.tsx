@@ -116,7 +116,8 @@ export default () => {
                         first && launch(first);
                     }}
                     $={self => (
-                        (entry = self), createEffect(() => open() && self.grab_focus())
+                        (entry = self),
+                        createEffect(() => open() && self.grab_focus())
                     )}
                 />
                 <scrolledwindow
