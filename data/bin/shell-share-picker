@@ -1,0 +1,2 @@
+#!/bin/sh
+systemctl --user is-active -q shell && /usr/bin/shell share "$XDPH_WINDOW_SHARING_LIST"

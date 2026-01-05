@@ -42,23 +42,31 @@
 
         buildInputs = deps pkgs;
 
+        dontWrapGApps = true;
+        dontPatchShebangs = true;
+
         installPhase = ''
           runHook preInstall
 
-          mkdir -p $out/bin
+          cp -r data $out
+          substituteInPlace $(find $out -type f) --replace /usr/bin $out/bin
           ags bundle app.ts $out/bin/shell
-          cp -r etc $out/etc
-          substituteInPlace $out/etc/systemd/user/*.service \
-            --replace /usr/bin/shell $out/bin/shell
 
           runHook postInstall
+        '';
+
+        postFixup = ''
+          wrapGApp $out/bin/shell
         '';
       };
     });
 
     devShells = systems (pkgs: ags: {
       default = pkgs.mkShell {
-        buildInputs = [ (ags.override { extraPackages = deps pkgs; }) ];
+        buildInputs = with pkgs; [
+          (ags.override { extraPackages = deps pkgs; })
+          prettier
+        ];
       };
     });
   };

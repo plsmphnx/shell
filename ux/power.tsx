@@ -83,7 +83,7 @@ const STATUS = Static(() => {
 
 export default () => (
     <Toggle id="power" label={STATUS().as(s => s[0])} tooltipText={STATUS().as(s => s[1])}>
-        <box class="power menu" orientation={Orientation.VERTICAL}>
+        <box class="iconic menu" orientation={Orientation.VERTICAL}>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
                 <button label={(ICONS.Commands as any)[name]} onClicked={() => exec(cmd)} />
             ))}

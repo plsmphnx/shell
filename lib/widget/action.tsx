@@ -10,9 +10,9 @@ export namespace Action {
         actions?: [string | Accessor<string>, () => void, Accessor<boolean>?][];
     };
 }
-export const Action = ({ actions = [], ...rest }: Action.Props) => {
+export const Action = ({ actions = [], class: cls, ...rest }: Action.Props) => {
     if (actions.length === 0) {
-        return <box {...rest} class="action" />;
+        return <box class={cls} {...rest} $={self => self.add_css_class('action')} />;
     }
 
     const [hover, hover_] = createState(false);
@@ -21,7 +21,10 @@ export const Action = ({ actions = [], ...rest }: Action.Props) => {
         : createComputed(() => hover() && actions.some(([, , v]) => v!()));
 
     return (
-        <box class="action" orientation={Orientation.VERTICAL}>
+        <box
+            class={cls}
+            $={self => self.add_css_class('action')}
+            orientation={Orientation.VERTICAL}>
             <Event.Hover onHover={(_, h) => hover_(h)} />
             <box {...rest} />
             <revealer revealChild={visible} transitionType={Transition.SLIDE_DOWN}>

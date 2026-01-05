@@ -95,13 +95,16 @@ window {
     color: $bgt;
 }
 
+.iconic {
+    font-size: 150%;
+}
+
 .hidden {
     color: transparent;
 }
 
 .action {
     @include float;
-    min-width: $popup;
     .title {
         font-weight: bold;
     }
@@ -118,9 +121,17 @@ window {
             }
             &:not(:first-child) {
                 border-left: $border solid $shd;
+                padding-left: $margin;
+            }
+            &:not(:last-child) {
+                padding-right: $margin;
             }
         }
     }
+}
+
+.toggle .action {
+    min-width: $popup;
 }
 
 .icon {
@@ -174,10 +185,6 @@ tooltip {
             margin-top: $margin;
         }
     }
-}
-
-.power button {
-    font-size: 150%;
 }
 
 .volume {

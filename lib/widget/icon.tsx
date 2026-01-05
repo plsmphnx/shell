@@ -25,11 +25,11 @@ function build(icons: string[], rest: Props.Image) {
     const icon = icons.reduce<ReturnType<typeof props>>((i, v) => i || props(v || ''), false);
     return icon ? (
         <image
-            class="icon"
             overflow={Overflow.HIDDEN}
             pixelSize={Config.Size.Icon}
             {...icon}
             {...rest}
+            $={self => self.add_css_class('icon')}
         />
     ) : undefined;
 }

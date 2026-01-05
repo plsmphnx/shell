@@ -8,6 +8,7 @@ import { Config, Static } from './lib/util';
 
 import Monitor from './ux/monitor';
 import * as Launcher from './ux/launcher';
+import * as Share from './ux/share';
 
 App.start({
     main() {
@@ -25,6 +26,9 @@ App.start({
             case 'reload':
                 Config.reload();
                 break;
+            case 'share':
+                Share.open(req, res);
+                return;
             case 'quit':
                 App.quit();
                 break;

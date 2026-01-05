@@ -134,6 +134,12 @@ export default () => {
     );
 };
 
-export const open = () => (APPS().reload(), TEXT_(''), Closer.open('launcher')[1](true));
+export function open() {
+    APPS().reload();
+    TEXT_('');
+    Closer.open('launcher')[1](true);
+}
 
-export const close = () => Closer.open('launcher')[1](false);
+function close() {
+    Closer.open('launcher')[1](false);
+}

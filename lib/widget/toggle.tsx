@@ -15,6 +15,7 @@ export const Toggle = ({ id, reveal, drop, children, ...rest }: Toggle.Props) =>
     reveal && createEffect(() => reveal() || open_(false));
 
     <Popup
+        class="toggle"
         visible={drop ? createComputed(() => open() || drop()) : open}
         transitionType={Transition.SLIDE_DOWN}
         transitionDuration={1000}
@@ -25,9 +26,9 @@ export const Toggle = ({ id, reveal, drop, children, ...rest }: Toggle.Props) =>
     return (
         <Status
             id={id}
+            class={open.as(o => (o ? 'bright' : ''))}
             onPrimary={() => open_(o => !o)}
             reveal={reveal}
-            class={open.as(o => (o ? 'bright' : ''))}
             {...rest}
         />
     );
