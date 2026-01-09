@@ -23,8 +23,8 @@ export const Popup = ({
     const focused = Monitor.is(createBinding(Hyprland.get_default(), 'focused_monitor'));
     const show = createMemo(() => visible() && focused());
 
-    const [state, state_] = createState([show.peek(), false]);
-    createEffect(() => state_(s => [show() || s[1], show() && s[0]]));
+    const [state, state_] = createState({ win: false, rev: false });
+    createEffect(() => state_(({ win, rev }) => ({ win: show() || rev, rev: show() && win })));
 
     return (
         <Window
@@ -32,15 +32,15 @@ export const Popup = ({
             defaultHeight={-1}
             defaultWidth={-1}
             {...rest}
-            visible={state.as(s => s[0])}
-            onNotifyVisible={self => self.visible && state_([true, true])}>
+            visible={state.as(({ win }) => win)}
+            onNotifyVisible={self => self.visible && state_({ win: true, rev: true })}>
             <Workaround>
                 <revealer
                     transitionType={transitionType}
                     transitionDuration={transitionDuration}
-                    revealChild={state.as(s => s[1])}
+                    revealChild={state.as(({ rev }) => rev)}
                     onNotifyChildRevealed={self =>
-                        self.child_revealed || state_([false, false])
+                        self.child_revealed || state_({ win: false, rev: false })
                     }>
                     {children}
                 </revealer>
