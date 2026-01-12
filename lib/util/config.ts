@@ -26,14 +26,18 @@ export function reload() {
 
     const vals: { [key: string]: string } = {};
     const opts = getopts({
-        'misc:font_family': 'str',
         'decoration:rounding': 'int',
         'general:border_size': 'int',
+        'general:col.active_border': 'custom',
+        'misc:background_color': 'int',
+        'misc:font_family': 'str',
     });
 
     const color = lst(cfg, 'style', 'color');
-    vals.fg = color[0] || 'white';
-    vals.bg = color[1] || 'black';
+    vals.fg = color[0] || `#${opts['general:col.active_border'].split(' ')[0].slice(2)}`;
+    vals.bg =
+        color[1] ||
+        `#${Number(opts['misc:background_color']).toString(16).padStart(8, '0').slice(2)}`;
 
     const text = val(cfg, 'style', 'font-size', '14');
     TEXT_(Number(text));
@@ -50,6 +54,9 @@ export function reload() {
 
     const borderSize = val(cfg, 'style', 'border-size', opts['general:border_size']);
     vals.border = `${borderSize}px`;
+
+    const gap = val(cfg, 'style', 'gap', '0');
+    vals.gap = `${gap}px`;
 
     const image = lst(cfg, 'style', 'border-image');
     const slice = lst(cfg, 'style', 'border-slice');

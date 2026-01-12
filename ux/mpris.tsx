@@ -69,26 +69,29 @@ const player = (p: Mpris.Player) => {
     );
 };
 
-export default () => {
-    const mpris = Mpris.get_default();
-    const players = createBinding(mpris, 'players');
-    return (
-        <Toggle
-            id="mpris"
-            label={ICON()}
-            reveal={players.as(p => p.length > 0)}
-            onSecondary={() => {
-                const playing = mpris.players.filter(p => p.playback_status === PLAYING);
-                for (const p of playing) {
-                    p.pause();
-                }
-                if (playing.length === 0 && mpris.players.length === 1) {
-                    mpris.players[0].play();
-                }
-            }}>
-            <box orientation={Orientation.VERTICAL}>
-                <For each={players}>{player}</For>
-            </box>
-        </Toggle>
-    );
-};
+const PLAYERS = Static(() =>
+    createBinding(Mpris.get_default(), 'players').as(ps =>
+        ps.sort((a, b) => a.identity.localeCompare(b.identity)),
+    ),
+);
+
+export default () => (
+    <Toggle
+        id="mpris"
+        label={ICON()}
+        reveal={PLAYERS().as(p => p.length > 0)}
+        onSecondary={() => {
+            const { players } = Mpris.get_default();
+            const playing = players.filter(p => p.playback_status === PLAYING);
+            for (const p of playing) {
+                p.pause();
+            }
+            if (playing.length === 0 && players.length === 1) {
+                players[0].play();
+            }
+        }}>
+        <box orientation={Orientation.VERTICAL}>
+            <For each={PLAYERS()}>{player}</For>
+        </box>
+    </Toggle>
+);

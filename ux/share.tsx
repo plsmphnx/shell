@@ -19,8 +19,11 @@ const FOCUSED = Static(() => {
     const focused = createBinding(Hyprland.get_default(), 'focused_client');
     return createMemo(() =>
         INFO() && focused()
-            ? [Icon.client(focused())(), INFO()!.win[createBinding(focused(), 'address')()]]
-            : [],
+            ? {
+                  icon: Icon.client(focused())(),
+                  id: INFO()!.win[createBinding(focused(), 'address')()],
+              }
+            : {},
     );
 });
 
@@ -34,9 +37,9 @@ export default () => {
                 actions={[
                     [ICONS.Screen, () => close('screen', gdk.connector)],
                     [
-                        FOCUSED().as(f => f[0] || ''),
-                        () => close('window', FOCUSED().peek()[1]),
-                        FOCUSED().as(f => !!f[1]),
+                        FOCUSED().as(({ icon }) => icon || ''),
+                        () => close('window', FOCUSED().peek().id),
+                        FOCUSED().as(({ id }) => !!id),
                     ],
                 ]}>
                 <Event.Click onRight={() => close()} />

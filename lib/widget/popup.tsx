@@ -28,6 +28,7 @@ export const Popup = ({
 
     return (
         <Window
+            kind="popup"
             layer={Layer.OVERLAY}
             defaultHeight={-1}
             defaultWidth={-1}

@@ -14,6 +14,7 @@ import Workspaces from './workspaces';
 
 export default () => (
     <Window
+        kind="bar"
         anchor={Anchor.TOP | Anchor.RIGHT | Anchor.LEFT}
         exclusivity={Exclusivity.EXCLUSIVE}
         visible>

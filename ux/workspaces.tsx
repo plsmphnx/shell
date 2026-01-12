@@ -13,6 +13,12 @@ function clients(cb: (c: Hyprland.Client) => boolean) {
 
 const SUBMAP = Static(() => createConnection('', [Hyprland.get_default(), 'submap', s => s]));
 
+const WORKSPACES = Static(() =>
+    createBinding(Hyprland.get_default(), 'workspaces').as(ws =>
+        ws.filter(w => w.id > 0).sort((a, b) => a.id - b.id),
+    ),
+);
+
 export default () => {
     const hyprland = Hyprland.get_default();
     const focused = createBinding(hyprland, 'focused_workspace');
@@ -29,16 +35,13 @@ export default () => {
         </label>
     );
 
-    const ws = createBinding(hyprland, 'workspaces');
     const cs = clients(
         c => createBinding(c, 'pinned')() && Monitor.is(createBinding(c, 'monitor'), gdk)(),
     );
     return (
         <box class="workspaces">
             <box>
-                <For each={ws.as(ws => ws.filter(w => w.id > 0).sort((a, b) => a.id - b.id))}>
-                    {workspace}
-                </For>
+                <For each={WORKSPACES()}>{workspace}</For>
             </box>
             <box class="dim status">
                 <label label={cs} visible={cs.as(cs => !!cs)} />

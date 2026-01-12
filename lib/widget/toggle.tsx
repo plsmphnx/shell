@@ -36,3 +36,4 @@ export const Toggle = ({ id, reveal, drop, children, ...rest }: Toggle.Props) =>
 export type Toggle = Status;
 
 Toggle.open = (id: string) => Closer.open(id)[0];
+Toggle.close = (id: string) => Closer.open(id)[1](false);

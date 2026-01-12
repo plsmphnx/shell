@@ -4,11 +4,13 @@ import { Astal } from 'ags/gtk4';
 import { Monitor, Props } from '../util';
 
 export namespace Window {
-    export type Props = Props.Window;
+    export type Props = Props.Window & {
+        kind: string;
+    };
 }
-export const Window = ({ ...rest }: Window.Props) => (
+export const Window = ({ kind, ...rest }: Window.Props) => (
     <Astal.Window
-        namespace="shell"
+        namespace={`shell-${kind}`}
         gdkmonitor={Monitor.Context.use()?.gdk}
         $={self => onCleanup(() => self.run_dispose())}
         {...rest}

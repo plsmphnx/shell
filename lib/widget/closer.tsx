@@ -12,6 +12,7 @@ const ANY = Static(() => createMemo(() => Object.values(OPEN()).some(([o]) => o(
 
 export const Closer = () => (
     <Window
+        kind="close"
         anchor={Anchor.TOP | Anchor.RIGHT | Anchor.LEFT | Anchor.BOTTOM}
         layer={Layer.TOP}
         keymode={Keymode.NONE}

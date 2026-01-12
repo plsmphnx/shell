@@ -1,5 +1,6 @@
 import { createBinding, createMemo } from 'ags';
 import { exec } from 'ags/process';
+import { timeout } from 'ags/time';
 
 import Battery from 'gi://AstalBattery';
 
@@ -67,25 +68,34 @@ const STATUS = Static(() => {
         switch (type() === BATTERY ? state() : UNKNOWN) {
             case CHARGING:
                 return full() > 0
-                    ? [ICONS.Charging(percent()), `${p}% (${time(full())})`]
-                    : [ICONS.Icon, `${p}%`];
+                    ? { icon: ICONS.Charging(percent()), text: `${p}% (${time(full())})` }
+                    : { icon: ICONS.Icon, text: `${p}%` };
             case DISCHARGING:
                 return empty() > 0
-                    ? [ICONS.Draining(percent()), `${p}% (${time(empty())})`]
-                    : [ICONS.Alert, `${p}%`];
+                    ? { icon: ICONS.Draining(percent()), text: `${p}% (${time(empty())})` }
+                    : { icon: ICONS.Alert, text: `${p}%` };
             case EMPTY:
-                return [ICONS.Alert, '0%'];
+                return { icon: ICONS.Alert, text: '0%' };
             default:
-                return [ICONS.Icon, '100%'];
+                return { icon: ICONS.Icon, text: '100%' };
         }
     });
 });
 
 export default () => (
-    <Toggle id="power" label={STATUS().as(s => s[0])} tooltipText={STATUS().as(s => s[1])}>
+    <Toggle
+        id="power"
+        label={STATUS().as(({ icon }) => icon)}
+        tooltipText={STATUS().as(({ text }) => text)}>
         <box class="iconic menu" orientation={Orientation.VERTICAL}>
             {Object.entries(COMMANDS).map(([name, cmd]) => (
-                <button label={(ICONS.Commands as any)[name]} onClicked={() => exec(cmd)} />
+                <button
+                    label={(ICONS.Commands as any)[name]}
+                    onClicked={() => {
+                        Toggle.close('power');
+                        timeout(0, () => exec(cmd));
+                    }}
+                />
             ))}
         </box>
     </Toggle>

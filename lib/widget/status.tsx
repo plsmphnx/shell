@@ -17,8 +17,8 @@ export const Status = ({ id, reveal, onPrimary, onSecondary, ...rest }: Status.P
     const inner = (
         <label {...rest}>
             <Event.Click
-                onLeft={onPrimary || (() => Utils.run(id, 0))}
-                onRight={onSecondary || (() => Utils.run(id, 1))}
+                onLeft={e => Utils.run(id, 0) || onPrimary?.(e)}
+                onRight={e => Utils.run(id, 1) || onSecondary?.(e)}
             />
         </label>
     );

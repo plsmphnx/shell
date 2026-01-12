@@ -3,7 +3,7 @@ import { Gtk } from 'ags/gtk4';
 
 import Tray from 'gi://AstalTray';
 
-import { Config } from '../lib/util';
+import { Config, Static } from '../lib/util';
 import { Event } from '../lib/widget';
 
 function item(item: Tray.TrayItem) {
@@ -30,8 +30,14 @@ function item(item: Tray.TrayItem) {
     );
 }
 
+const ITEMS = Static(() =>
+    createBinding(Tray.get_default(), 'items').as(is =>
+        is.sort((a, b) => a.id.localeCompare(b.id)),
+    ),
+);
+
 export default () => (
     <box>
-        <For each={createBinding(Tray.get_default(), 'items')}>{item}</For>
+        <For each={ITEMS()}>{item}</For>
     </box>
 );

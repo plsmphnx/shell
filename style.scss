@@ -3,10 +3,11 @@ $dim: #{'alpha(var(--fg), 0.4)'};
 $txt: #{'alpha(var(--fg), 0.8)'};
 $bgt: var(--fg);
 
-$bc: var(--bg);
 $bg: #{'alpha(var(--bg), 0.4)'};
 
 $font: var(--font);
+
+$gap: var(--gap);
 
 $border: var(--border);
 $radius: var(--radius);
@@ -34,7 +35,8 @@ window {
 }
 
 .bar {
-    background-color: $bc;
+    background-color: $bg;
+    padding-bottom: $gap;
 }
 
 .status {
@@ -72,6 +74,10 @@ window {
     background-color: $bg;
     margin: $margin;
     padding: $margin;
+    &:not(:first-child),
+    :not(:first-child) & {
+        margin-top: 0;
+    }
 }
 
 .workspaces {

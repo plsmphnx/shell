@@ -2,7 +2,7 @@ import { createBinding, createComputed, createState, For } from 'ags';
 
 import Notifd from 'gi://AstalNotifd';
 
-import { popup } from '../lib/util';
+import { popup, Static } from '../lib/util';
 import { Action, Event, Icon, Text, Toggle } from '../lib/widget';
 
 const ICONS = {
@@ -38,10 +38,13 @@ const notify = (n: Notifd.Notification, pop_: (ms: number) => void) => {
     );
 };
 
-export default () => {
-    const notifd = Notifd.get_default();
-    const notifications = createBinding(notifd, 'notifications');
+const NOTIFICATIONS = Static(() =>
+    createBinding(Notifd.get_default(), 'notifications').as(ns =>
+        ns.sort((a, b) => a.time - b.time),
+    ),
+);
 
+export default () => {
     const [pop, pop_] = popup();
     const [hover, hover_] = createState(false);
 
@@ -49,16 +52,16 @@ export default () => {
         <Toggle
             id="notifications"
             label={ICONS.Icon}
-            reveal={notifications.as(n => n.length > 0)}
+            reveal={NOTIFICATIONS().as(n => n.length > 0)}
             drop={createComputed(() => pop() || hover())}
             onSecondary={() => {
-                for (const n of notifd.notifications) {
+                for (const n of Notifd.get_default().notifications) {
                     n.dismiss();
                 }
             }}>
             <box orientation={Orientation.VERTICAL}>
                 <Event.Hover onHover={(_, h) => hover_(h)} />
-                <For each={notifications}>{n => notify(n, pop_)}</For>
+                <For each={NOTIFICATIONS()}>{n => notify(n, pop_)}</For>
             </box>
         </Toggle>
     );
