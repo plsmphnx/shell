@@ -6,6 +6,7 @@ import GLib from 'gi://GLib';
 
 import style from '../../style.scss';
 
+import * as Border from './border';
 import * as Icon from './icon';
 import * as Utils from './utils';
 
@@ -55,22 +56,18 @@ export function reload() {
     const borderSize = val(cfg, 'style', 'border-size', opts['general:border_size']);
     vals.border = `${borderSize}px`;
 
+    const borderMask = val(cfg, 'style', 'border-mask', '11111111');
+
     const gap = val(cfg, 'style', 'gap', '0');
     vals.gap = `${gap}px`;
 
-    const image = lst(cfg, 'style', 'border-image');
-    const slice = lst(cfg, 'style', 'border-slice');
-    vals.image0 = image[0] ? `url("file://${dir}/${image[0]}")` : 'none';
-    vals.image1 = image[1] ? `url("file://${dir}/${image[1]}")` : 'none';
-    vals.slice0 = slice[0] || '0';
-    vals.slice1 = slice[1] || vals.slice0;
-    vals.width0 = vals.slice0.replaceAll(/(\d+)/g, '$1px');
-    vals.width1 = vals.slice1.replaceAll(/(\d+)/g, '$1px');
+    Object.assign(vals, Border.build(rounding, borderSize, borderMask));
 
     for (const [key, val] of Object.entries(vals)) {
         css = css.replaceAll(`var(--${key})`, val);
     }
 
+    App.reset_css();
     App.apply_css(css, true);
 
     Icon.reload(key(cfg, 'icons').map(cls => [cls, val(cfg, 'icons', cls, '0f2d0')]));

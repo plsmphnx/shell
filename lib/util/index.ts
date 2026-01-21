@@ -1,6 +1,7 @@
 import { createState, onCleanup } from 'ags';
 import { Timer, timeout } from 'ags/time';
 
+export * as Border from './border';
 export * as Config from './config';
 export * as Icon from './icon';
 export * as Monitor from './monitor';
