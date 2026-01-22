@@ -19,6 +19,8 @@ $btxtsrc: var(--image1);
 $btxtcut: var(--slice1);
 $btxtsiz: var(--width1);
 
+$shadow: var(--shadow);
+
 $text: var(--text);
 $margin: var(--margin);
 $icon: var(--icon);
@@ -74,6 +76,7 @@ window {
     background-color: $bg;
     margin: $margin;
     padding: $margin;
+    box-shadow: 0 0 $margin $shadow;
     &:not(:first-child),
     :not(:first-child) & {
         margin-top: 0;

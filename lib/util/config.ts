@@ -27,6 +27,7 @@ export function reload() {
     const vals: { [key: string]: string } = {};
     const opts = getopts({
         'decoration:rounding': 'int',
+        'decoration:shadow:color': 'int',
         'general:border_size': 'int',
         'general:col.active_border': 'custom',
         'misc:background_color': 'int',
@@ -35,9 +36,7 @@ export function reload() {
 
     const color = lst(cfg, 'style', 'color');
     vals.fg = color[0] || `#${opts['general:col.active_border'].split(' ')[0].slice(2)}`;
-    vals.bg =
-        color[1] ||
-        `#${Number(opts['misc:background_color']).toString(16).padStart(8, '0').slice(2)}`;
+    vals.bg = color[1] || i2c(opts['misc:background_color']).color;
 
     const text = val(cfg, 'style', 'font-size', '14');
     TEXT_(Number(text));
@@ -67,6 +66,11 @@ export function reload() {
     vals.width0 = vals.slice0.replaceAll(/(\d+)/g, '$1px');
     vals.width1 = vals.slice1.replaceAll(/(\d+)/g, '$1px');
 
+    const shadow = i2c(opts['decoration:shadow:color']);
+    const shadowColor = val(cfg, 'style', 'shadow-color', shadow.color);
+    const shadowAlpha = val(cfg, 'style', 'shadow-alpha', shadow.alpha);
+    vals.shadow = `alpha(${shadowColor}, ${2 * Number(shadowAlpha)})`;
+
     for (const [key, val] of Object.entries(vals)) {
         css = css.replaceAll(`var(--${key})`, val);
     }
@@ -77,11 +81,11 @@ export function reload() {
     Utils.reload(key(cfg, 'utils').map(id => [id, lst(cfg, 'utils', id)]));
 }
 
-function val(cfg: GLib.KeyFile, group: string, key: string, def: string) {
+function val(cfg: GLib.KeyFile, group: string, key: string, def: any) {
     try {
         return cfg.get_string(group, key).trim();
     } catch {
-        return def;
+        return String(def);
     }
 }
 
@@ -113,4 +117,9 @@ function getopts(vals: { [id: string]: string }) {
         vals[opt.option] = String(opt[vals[opt.option]]);
     }
     return vals;
+}
+
+function i2c(val: string) {
+    const hex = Number(val).toString(16).padStart(8, '0');
+    return { color: `#${hex.slice(2)}`, alpha: parseInt(hex.slice(0, 2), 16) / 255 };
 }
