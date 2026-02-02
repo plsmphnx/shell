@@ -30,13 +30,14 @@ export function reload() {
         'decoration:shadow:color': 'int',
         'general:border_size': 'int',
         'general:col.active_border': 'custom',
+        'general:gaps_out': 'custom',
         'misc:background_color': 'int',
         'misc:font_family': 'str',
     });
 
     const color = lst(cfg, 'style', 'color');
     vals.fg = color[0] || `#${opts['general:col.active_border'].split(' ')[0].slice(2)}`;
-    vals.bg = color[1] || i2c(opts['misc:background_color']).color;
+    vals.bg = color[1] || i2c(opts['misc:background_color']);
 
     const text = val(cfg, 'style', 'font-size', '14');
     TEXT_(Number(text));
@@ -54,21 +55,24 @@ export function reload() {
     const borderSize = val(cfg, 'style', 'border-size', opts['general:border_size']);
     vals.border = `${borderSize}px`;
 
-    const gap = val(cfg, 'style', 'gap', '0');
-    vals.gap = `${gap}px`;
+    const gaps = val(cfg, 'style', 'gaps', opts['general:gaps_out']);
+    vals.gaps = is2px(gaps);
 
     const image = lst(cfg, 'style', 'border-image');
     const slice = lst(cfg, 'style', 'border-slice');
     vals.image0 = image[0] ? `url("file://${dir}/${image[0]}")` : 'none';
-    vals.image1 = image[1] ? `url("file://${dir}/${image[1]}")` : 'none';
+    vals.image1 = image[1] ? `url("file://${dir}/${image[1]}")` : vals.image0;
+    vals.image2 = image[2] ? `url("file://${dir}/${image[2]}")` : vals.image0;
     vals.slice0 = slice[0] || '0';
     vals.slice1 = slice[1] || vals.slice0;
-    vals.width0 = vals.slice0.replaceAll(/(\d+)/g, '$1px');
-    vals.width1 = vals.slice1.replaceAll(/(\d+)/g, '$1px');
+    vals.slice2 = slice[2] || vals.slice0;
+    vals.width0 = is2px(vals.slice0);
+    vals.width1 = is2px(vals.slice1);
+    vals.width2 = is2px(vals.slice2);
 
     const shadow = i2c(opts['decoration:shadow:color']);
-    const shadowColor = val(cfg, 'style', 'shadow-color', shadow.color);
-    const shadowAlpha = val(cfg, 'style', 'shadow-alpha', shadow.alpha);
+    const shadowColor = val(cfg, 'style', 'shadow-color', shadow);
+    const shadowAlpha = val(cfg, 'style', 'shadow-alpha', 0.2);
     vals.shadow = `alpha(${shadowColor}, ${2 * Number(shadowAlpha)})`;
 
     for (const [key, val] of Object.entries(vals)) {
@@ -120,6 +124,9 @@ function getopts(vals: { [id: string]: string }) {
 }
 
 function i2c(val: string) {
-    const hex = Number(val).toString(16).padStart(8, '0');
-    return { color: `#${hex.slice(2)}`, alpha: parseInt(hex.slice(0, 2), 16) / 255 };
+    return `#${Number(val).toString(16).padStart(8, '0').slice(2)}`;
+}
+
+function is2px(val: string) {
+    return val.replaceAll(/(\d+)/g, '$1px');
 }

@@ -7,7 +7,7 @@ $bg: #{'alpha(var(--bg), 0.4)'};
 
 $font: var(--font);
 
-$gap: var(--gap);
+$gaps: var(--gaps);
 
 $border: var(--border);
 $radius: var(--radius);
@@ -18,6 +18,9 @@ $bdimsiz: var(--width0);
 $btxtsrc: var(--image1);
 $btxtcut: var(--slice1);
 $btxtsiz: var(--width1);
+$btgtsrc: var(--image2);
+$btgtcut: var(--slice2);
+$btgtsiz: var(--width2);
 
 $shadow: var(--shadow);
 
@@ -38,7 +41,7 @@ window {
 
 .bar {
     background-color: $bg;
-    padding-bottom: $gap;
+    padding: $gaps;
 }
 
 .status {
@@ -55,14 +58,14 @@ window {
     border-style: solid;
     border-width: $border;
     border-color: $dim;
-    border-image-source: $bdimsrc;
-    border-image-slice: $bdimcut;
-    border-image-width: $bdimsiz;
     padding: 0 $margin;
 }
 
 .target {
     @include target;
+    border-image-source: $bdimsrc;
+    border-image-slice: $bdimcut;
+    border-image-width: $bdimsiz;
     &:hover {
         border-color: $txt;
         border-image-source: $btxtsrc;
@@ -73,6 +76,9 @@ window {
 
 @mixin float {
     @include target;
+    border-image-source: $btgtsrc;
+    border-image-slice: $btgtcut;
+    border-image-width: $btgtsiz;
     background-color: $bg;
     margin: $margin;
     padding: $margin;
