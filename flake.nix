@@ -49,7 +49,8 @@
           runHook preInstall
 
           cp -r data $out
-          substituteInPlace $(find $out -type f) --replace /usr/bin $out/bin
+          substituteInPlace $(find $out -type f) \
+            --replace-quiet /usr/bin $out/bin
           ags bundle app.ts $out/bin/shell
 
           runHook postInstall
