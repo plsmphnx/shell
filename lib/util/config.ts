@@ -26,18 +26,18 @@ export function reload() {
 
     const vals: { [key: string]: string } = {};
     const opts = getopts({
-        'decoration:rounding': 'int',
-        'decoration:shadow:color': 'int',
-        'general:border_size': 'int',
-        'general:col.active_border': 'custom',
-        'general:gaps_out': 'custom',
-        'misc:background_color': 'int',
-        'misc:font_family': 'str',
+        'decoration.rounding': 'int',
+        'decoration.shadow.color': 'int',
+        'general.border_size': 'int',
+        'general.col.active_border': 'gradient',
+        'general.gaps_out': 'css',
+        'misc.background_color': 'int',
+        'misc.font_family': 'str',
     });
 
     const color = lst(cfg, 'style', 'color');
-    vals.fg = color[0] || `#${opts['general:col.active_border'].split(' ')[0].slice(2)}`;
-    vals.bg = color[1] || i2c(opts['misc:background_color']);
+    vals.fg = color[0] || `#${opts['general.col.active_border'].split(' ')[0].slice(2)}`;
+    vals.bg = color[1] || i2c(opts['misc.background_color']);
 
     const text = val(cfg, 'style', 'font-size', '14');
     TEXT_(Number(text));
@@ -46,16 +46,16 @@ export function reload() {
     vals.icon = `${Size.Icon.peek()}px`;
     vals.popup = `${Size.Popup.peek()}px`;
 
-    const font = val(cfg, 'style', 'font-family', opts['misc:font_family']);
+    const font = val(cfg, 'style', 'font-family', opts['misc.font_family']);
     vals.font = `'${font}'`;
 
-    const rounding = val(cfg, 'style', 'rounding', opts['decoration:rounding']);
+    const rounding = val(cfg, 'style', 'rounding', opts['decoration.rounding']);
     vals.radius = `${rounding}px`;
 
-    const borderSize = val(cfg, 'style', 'border-size', opts['general:border_size']);
+    const borderSize = val(cfg, 'style', 'border-size', opts['general.border_size']);
     vals.border = `${borderSize}px`;
 
-    const gaps = val(cfg, 'style', 'gaps', opts['general:gaps_out']);
+    const gaps = val(cfg, 'style', 'gaps', opts['general.gaps_out']);
     vals.gaps = is2px(gaps);
 
     const image = lst(cfg, 'style', 'border-image');
@@ -70,7 +70,7 @@ export function reload() {
     vals.width1 = is2px(vals.slice1);
     vals.width2 = is2px(vals.slice2);
 
-    const shadow = i2c(opts['decoration:shadow:color']);
+    const shadow = i2c(opts['decoration.shadow.color']);
     const shadowColor = val(cfg, 'style', 'shadow-color', shadow);
     const shadowAlpha = val(cfg, 'style', 'shadow-alpha', 0.2);
     vals.shadow = `alpha(${shadowColor}, ${2 * Number(shadowAlpha)})`;

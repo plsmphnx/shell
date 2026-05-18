@@ -31,7 +31,7 @@ export default () => {
                 c => !createBinding(c, 'pinned')() && createBinding(c, 'workspace')() === ws,
             )}
             visible={Monitor.is(createBinding(ws, 'monitor'), gdk)}>
-            <Event.Click onLeft={() => hyprland.dispatch('workspace', String(ws.id))} />
+            <Event.Click onLeft={() => hyprland.dispatch("hl.dsp.focus", `{ workspace = "${ws.id}" }`)} />
         </label>
     );
 
