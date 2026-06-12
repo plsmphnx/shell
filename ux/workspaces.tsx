@@ -28,7 +28,7 @@ export default () => {
         <label
             class={focused.as(f => (f === ws ? 'target' : 'unfocused target'))}
             label={clients(
-                c => !createBinding(c, 'pinned')() && createBinding(c, 'workspace')() === ws,
+                c => !createBinding(c, 'floating')() && createBinding(c, 'workspace')() === ws,
             )}
             visible={Monitor.is(createBinding(ws, 'monitor'), gdk)}>
             <Event.Click onLeft={() => hyprland.dispatch("hl.dsp.focus", `{ workspace = "${ws.id}" }`)} />
@@ -36,7 +36,7 @@ export default () => {
     );
 
     const cs = clients(
-        c => createBinding(c, 'pinned')() && Monitor.is(createBinding(c, 'monitor'), gdk)(),
+        c => createBinding(c, 'floating')() && Monitor.is(createBinding(c, 'monitor'), gdk)(),
     );
     return (
         <box class="workspaces">
