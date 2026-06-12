@@ -11,7 +11,9 @@ function clients(cb: (c: Hyprland.Client) => boolean) {
     return createMemo(() => clients().filter(cb).map(icon).sort().join(' '));
 }
 
-const SUBMAP = Static(() => createConnection('', [Hyprland.get_default(), 'submap', s => s]));
+const SUBMAP = Static(() =>
+    Icon.submap(createConnection('', [Hyprland.get_default(), 'submap', s => s])),
+);
 
 const WORKSPACES = Static(() =>
     createBinding(Hyprland.get_default(), 'workspaces').as(ws =>
@@ -31,7 +33,9 @@ export default () => {
                 c => !createBinding(c, 'floating')() && createBinding(c, 'workspace')() === ws,
             )}
             visible={Monitor.is(createBinding(ws, 'monitor'), gdk)}>
-            <Event.Click onLeft={() => hyprland.dispatch("hl.dsp.focus", `{ workspace = "${ws.id}" }`)} />
+            <Event.Click
+                onLeft={() => hyprland.dispatch('hl.dsp.focus', `{ workspace = "${ws.id}" }`)}
+            />
         </label>
     );
 

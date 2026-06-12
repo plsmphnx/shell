@@ -14,5 +14,5 @@ hl.layer_rule {
     blur = false,
 }
 on("config.reloaded", function ()
-    hl.exec_raw "systemctl --user start shell@reload"
+    hl.exec_cmd "systemctl --user start shell@reload"
 end)

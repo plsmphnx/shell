@@ -80,7 +80,7 @@
       config = mkIf cfg.enable {
         environment = {
           systemPackages = [ pkg ];
-          pathsToLink = [ "/share/shell" ];
+          pathsToLink = [ "/share/hypr" ];
         };
 
         systemd = {

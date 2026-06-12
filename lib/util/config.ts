@@ -81,7 +81,10 @@ export function reload() {
 
     App.apply_css(css, true);
 
-    Icon.reload(key(cfg, 'icons').map(cls => [cls, val(cfg, 'icons', cls, '0f2d0')]));
+    Icon.reload(
+        key(cfg, 'icons').map(cls => [cls, val(cfg, 'icons', cls, '0f2d0')]),
+        key(cfg, 'modes').map(sub => [sub, val(cfg, 'modes', sub, '0f2d0')]),
+    );
     Utils.reload(key(cfg, 'utils').map(id => [id, lst(cfg, 'utils', id)]));
 }
 

@@ -1,4 +1,4 @@
-import { createBinding, createMemo, createState } from 'ags';
+import { Accessor, createBinding, createMemo, createState } from 'ags';
 
 import Hyprland from 'gi://AstalHyprland';
 
@@ -11,13 +11,25 @@ export function select(...icons: string[]) {
     };
 }
 
-const [CLIENT, CLIENT_] = createState<[string, string][]>([]);
+const [ICONS, ICONS_] = createState<[string, string][]>([]);
+const [MODES, MODES_] = createState<{ [key: string]: string }>({});
 
 export function client(client: Hyprland.Client) {
     const cls = createBinding(client, 'class').as(c => c.toLowerCase());
-    return createMemo(() => CLIENT().find(([c]) => cls().includes(c))?.[1] || '\u{0f2d0}');
+    return createMemo(() => ICONS().find(([c]) => cls().includes(c))?.[1] || '\u{0f2d0}');
 }
 
-export function reload(icons: [string, string][]) {
-    CLIENT_(icons.map(([cls, hex]) => [cls, String.fromCodePoint(parseInt(hex, 16))]));
+export function submap(submap: Accessor<string>) {
+    return createMemo(() => MODES()[submap()] ?? submap());
+}
+
+export function reload(icons: [string, string][], modes: [string, string][]) {
+    ICONS_(parse(icons));
+    MODES_(Object.fromEntries(parse(modes)));
+}
+
+function parse(pairs: [string, string][]) {
+    return pairs.map(
+        ([key, hex]) => [key, String.fromCodePoint(parseInt(hex, 16))] as [string, string],
+    );
 }
