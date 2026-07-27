@@ -4,18 +4,11 @@
       url = "github:aylur/ags/v3.1.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    astal = {
-      url = "github:aylur/astal";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
-  outputs = { self, nixpkgs, ags, astal }: let
-    systems = fn: nixpkgs.lib.mapAttrs (system: pkgs: fn pkgs
-      ags.packages.${system}.default
-      astal.packages.${system}
-    ) nixpkgs.legacyPackages;
+  outputs = { self, nixpkgs, ags }: let
+    systems = fn: nixpkgs.lib.mapAttrs fn nixpkgs.legacyPackages;
 
-    core = ags: astal: with astal; ags.override {
+    core = system: astal: with astal; ags.packages.${system}.default.override {
       inherit astal3 astal4;
       astal-io = io;
     };
@@ -36,13 +29,19 @@
       ]
     );
   in {
-    packages = systems (pkgs: ags: astal: let
-      build = astal: pkgs.stdenv.mkDerivation {
+    packages = systems (system: pkgs: {
+      default = pkgs.callPackage ({
+        astal,
+        gobject-introspection,
+        stdenvNoCC,
+        wrapGAppsHook4,
+        ...
+      }: stdenvNoCC.mkDerivation {
         name = "shell";
         src = ./.;
 
-        nativeBuildInputs = with pkgs; [
-          (core ags astal)
+        nativeBuildInputs = [
+          (core system astal)
           gobject-introspection
           wrapGAppsHook4
         ];
@@ -66,42 +65,45 @@
         postFixup = ''
           wrapGApp $out/bin/shell
         '';
-      };
-    in {
-      default = build pkgs.astal;
-      flake = build astal;
+      }) {};
     });
 
-    devShells = systems (pkgs: ags: astal: let
-      build = astal: pkgs.mkShell {
+    devShells = systems (system: pkgs: {
+      default = pkgs.callPackage ({
+        astal,
+        mkShell,
+        ...
+      }: mkShell {
         buildInputs = with pkgs; [
-          ((core ags astal).override { extraPackages = deps astal; })
+          ((core system astal).override { extraPackages = deps astal; })
           prettier
         ];
-      };
-    in {
-      default = build pkgs.astal;
-      flake = build astal;
+      }) {};
     });
 
     nixosModules.default = { config, lib, pkgs, ... }: let
       cfg = config.programs.shell;
-      sys = self.packages.${pkgs.stdenv.hostPlatform.system};
-      pkg = flake: if flake then sys.flake else sys.default;
+      pkg = self.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
+        astal = cfg.astal;
+      };
     in with lib; {
       options.programs.shell = {
         enable = mkEnableOption "the shell";
-        flake = mkEnableOption "the astal flake";
+        astal = mkOption {
+          type = types.attrsOf types.package;
+          default = pkgs.astal;
+          description = "Astal packages.";
+        };
       };
 
       config = mkIf cfg.enable {
         environment = {
-          systemPackages = [ (pkg cfg.flake) ];
+          systemPackages = [ pkg ];
           pathsToLink = [ "/share/hypr" ];
         };
 
         systemd = {
-          packages = [ (pkg cfg.flake) ];
+          packages = [ pkg ];
           user.services.shell = {
             environment.PATH = mkForce (concatStringsSep ":" [
               "/run/wrappers/bin"
